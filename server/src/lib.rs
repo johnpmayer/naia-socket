@@ -18,6 +18,12 @@ extern crate log;
 #[macro_use]
 extern crate cfg_if;
 
+#[cfg(all(feature = "use-udp", feature = "use-webrtc"))]
+compile_error!("Naia Server Socket can only use UDP or WebRTC, you must pick one");
+
+#[cfg(all(not(feature = "use-udp"), not(feature = "use-webrtc")))]
+compile_error!("Naia Server Socket requires either the 'use-udp' or 'use-webrtc' feature to be enabled, you must pick one.");
+
 #[cfg(feature = "use-udp")]
 mod udp_server_socket;
 #[cfg(feature = "use-webrtc")]
