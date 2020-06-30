@@ -1,6 +1,7 @@
 //! # Naia Server Socket
-//! Provides an abstraction of a Socket capable of sending/receiving to many clients, using either
-//! an underlying UdpSocket or a service that can communicate via unreliable WebRTC datachannels
+//! Provides an abstraction of a Socket capable of sending/receiving to many
+//! clients, using either an underlying UdpSocket or a service that can
+//! communicate via unreliable WebRTC datachannels
 
 #![deny(
     missing_docs,

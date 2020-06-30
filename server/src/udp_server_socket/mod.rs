@@ -6,10 +6,8 @@ use std::{
     rc::Rc,
 };
 
-use super::message_sender::MessageSender;
-use super::socket_event::SocketEvent;
-use crate::error::NaiaServerSocketError;
-use crate::Packet;
+use super::{message_sender::MessageSender, socket_event::SocketEvent};
+use crate::{error::NaiaServerSocketError, Packet};
 use naia_socket_shared::{Config, Timer};
 
 #[derive(Debug)]
@@ -42,7 +40,7 @@ impl UdpServerSocket {
             receive_buffer: vec![0; 1472], //should be input from config
             message_sender,
             tick_timer: Timer::new(tick_interval),
-            clients: clients,
+            clients,
         }
     }
 

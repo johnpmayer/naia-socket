@@ -1,6 +1,4 @@
-use std::error::Error;
-use std::fmt;
-use std::net::SocketAddr;
+use std::{error::Error, fmt, net::SocketAddr};
 
 /// An Error type specifically related to the Naia Server Socket
 /// This is under construction and needs to be cleaned up

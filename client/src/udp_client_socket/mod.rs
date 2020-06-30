@@ -7,10 +7,8 @@ use std::{
     rc::Rc,
 };
 
-use super::message_sender::MessageSender;
-use super::socket_event::SocketEvent;
-use crate::error::NaiaClientSocketError;
-use crate::Packet;
+use super::{message_sender::MessageSender, socket_event::SocketEvent};
+use crate::{error::NaiaClientSocketError, Packet};
 use naia_socket_shared::{find_available_port, find_my_ip_address, Config};
 
 #[derive(Debug)]

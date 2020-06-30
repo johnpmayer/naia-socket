@@ -1,5 +1,7 @@
-use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
-use std::process::Command;
+use std::{
+    net::{IpAddr, Ipv4Addr, Ipv6Addr},
+    process::Command,
+};
 
 /// Given an IPv4 Address, attempt to find an available port on the current host
 pub fn find_my_ip_address() -> Option<IpAddr> {

@@ -1,15 +1,10 @@
 extern crate log;
 use log::info;
 
-use std::cell::RefCell;
-use std::collections::VecDeque;
-use std::net::SocketAddr;
-use std::rc::Rc;
+use std::{cell::RefCell, collections::VecDeque, net::SocketAddr, rc::Rc};
 
-use super::message_sender::MessageSender;
-use super::socket_event::SocketEvent;
-use crate::error::NaiaClientSocketError;
-use crate::Packet;
+use super::{message_sender::MessageSender, socket_event::SocketEvent};
+use crate::{error::NaiaClientSocketError, Packet};
 
 use naia_socket_shared::Config;
 
@@ -91,8 +86,7 @@ impl WebrtcClientSocket {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-use wasm_bindgen::prelude::*;
-use wasm_bindgen::{JsCast, JsValue};
+use wasm_bindgen::{prelude::*, JsCast, JsValue};
 use web_sys::{
     ErrorEvent, MessageEvent, ProgressEvent, RtcConfiguration, RtcDataChannel, RtcDataChannelInit,
     RtcDataChannelType, RtcIceCandidate, RtcIceCandidateInit, RtcPeerConnection, RtcSdpType,

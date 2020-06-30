@@ -1,5 +1,4 @@
-use std::error::Error;
-use std::fmt;
+use std::{error::Error, fmt};
 
 /// An Error type specifically related to the Naia Client Socket
 /// This is under construction and needs to be cleaned up

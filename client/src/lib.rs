@@ -1,5 +1,6 @@
 //! # Naia Client Socket
-//! A Socket abstraction over either a UDP socket on native Linux, or a unreliable WebRTC datachannel on the browser
+//! A Socket abstraction over either a UDP socket on native Linux, or a
+//! unreliable WebRTC datachannel on the browser
 
 #![deny(
     missing_docs,

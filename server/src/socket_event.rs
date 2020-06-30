@@ -5,7 +5,7 @@ use crate::Packet;
 pub enum SocketEvent {
     /// An event containing a new packet received from a Client
     Packet(Packet),
-    /// A Tick event
-    /// The duration between Ticks is defined in the Config given to the Server Socket
+    /// A Tick event. The duration between Ticks is defined in the Config given
+    /// to the Server Socket
     Tick,
 }

@@ -44,8 +44,8 @@ async fn main() {
                         }
                     }
                     SocketEvent::Tick => {
-                        // This could be used for your non-network logic (game loop?)
-                        //info!("Server Tick");
+                        // This could be used for your non-network logic (game
+                        // loop?) info!("Server Tick");
                     }
                 }
             }

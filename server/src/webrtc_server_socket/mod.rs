@@ -17,10 +17,8 @@ use futures_channel::mpsc;
 use futures_util::{pin_mut, select, FutureExt, StreamExt};
 use tokio::time::{self, Interval};
 
-use super::message_sender::MessageSender;
-use super::socket_event::SocketEvent;
-use crate::error::NaiaServerSocketError;
-use crate::Packet;
+use super::{message_sender::MessageSender, socket_event::SocketEvent};
+use crate::{error::NaiaServerSocketError, Packet};
 use naia_socket_shared::Config;
 
 const CLIENT_CHANNEL_SIZE: usize = 8;
