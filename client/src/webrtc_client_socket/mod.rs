@@ -17,9 +17,9 @@ pub struct WebrtcClientSocket {
 }
 
 impl WebrtcClientSocket {
-    pub fn connect(server_address: &str, _: Option<Config>) -> WebrtcClientSocket {
+    pub fn connect(server_socket_address: SocketAddr, _: Option<Config>) -> WebrtcClientSocket {
         let message_queue = Rc::new(RefCell::new(VecDeque::new()));
-        let data_channel = webrtc_initialize(server_address, message_queue.clone());
+        let data_channel = webrtc_initialize(server_socket_address, message_queue.clone());
 
         let dropped_outgoing_messages = Rc::new(RefCell::new(VecDeque::new()));
 
@@ -27,7 +27,7 @@ impl WebrtcClientSocket {
             MessageSender::new(data_channel.clone(), dropped_outgoing_messages.clone());
 
         WebrtcClientSocket {
-            address: server_address.parse().unwrap(),
+            address: server_socket_address,
             message_queue,
             message_sender,
             dropped_outgoing_messages,
@@ -122,10 +122,10 @@ pub struct IceServerConfig {
 }
 
 fn webrtc_initialize(
-    address: &str,
+    socket_address: SocketAddr,
     msg_queue: Rc<RefCell<VecDeque<Result<SocketEvent, NaiaClientSocketError>>>>,
 ) -> RtcDataChannel {
-    let server_url_str: String = "http://".to_string() + address + "/new_rtc_session";
+    let server_url_str = format!("http://{}/new_rtc_session", socket_address);
 
     let mut peer_config: RtcConfiguration = RtcConfiguration::new();
     let ice_server_config = IceServerConfig {

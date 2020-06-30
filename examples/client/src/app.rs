@@ -1,11 +1,12 @@
 use log::info;
+use std::net::{IpAddr, SocketAddr};
 
 use naia_client_socket::{ClientSocket, Config, MessageSender, Packet, SocketEvent};
 
 const PING_MSG: &str = "ping";
 const PONG_MSG: &str = "pong";
 
-const SERVER_PORT: &str = "14191";
+const SERVER_PORT: u16 = 14191;
 
 #[cfg(not(target_arch = "wasm32"))]
 use naia_client_socket::find_my_ip_address;
@@ -22,17 +23,16 @@ impl App {
 
         cfg_if! {
             if #[cfg(target_arch = "wasm32")] {
-                let server_ip_address: &str = "192.168.1.7"; // Put your Server's IP Address here!, can't easily find this automatically from the browser
+                let server_ip_address: IpAddr = "192.168.1.9".parse().expect("couldn't parse input IP address"); // Put your Server's IP Address here!, can't easily find this automatically from the browser
             } else {
-                let current_ip_address_string = find_my_ip_address().expect("can't find ip address").to_string();
-                let server_ip_address: &str = current_ip_address_string.as_str();
+                let server_ip_address = find_my_ip_address().expect("can't find ip address");
             }
         }
 
-        let server_socket_address = format!("{}:{}", server_ip_address, SERVER_PORT);
+        let server_socket_address = SocketAddr::new(server_ip_address, SERVER_PORT);
 
         let mut client_socket =
-            ClientSocket::connect(&server_socket_address, Some(Config::default()));
+            ClientSocket::connect(server_socket_address, Some(Config::default()));
         let mut message_sender = client_socket.get_sender();
 
         message_sender

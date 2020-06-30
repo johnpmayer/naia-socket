@@ -20,8 +20,8 @@ pub struct UdpServerSocket {
 }
 
 impl UdpServerSocket {
-    pub async fn listen(address: &str, config: Option<Config>) -> UdpServerSocket {
-        let socket = Rc::new(RefCell::new(UdpSocket::bind(address).unwrap()));
+    pub async fn listen(socket_address: SocketAddr, config: Option<Config>) -> UdpServerSocket {
+        let socket = Rc::new(RefCell::new(UdpSocket::bind(socket_address).unwrap()));
         socket
             .borrow()
             .set_nonblocking(true)

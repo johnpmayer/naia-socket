@@ -34,10 +34,8 @@ pub struct WebrtcServerSocket {
 }
 
 impl WebrtcServerSocket {
-    pub async fn listen(address: &str, config: Option<Config>) -> WebrtcServerSocket {
-        let session_listen_addr: SocketAddr =
-            address.parse().expect("could not parse HTTP address/port");
-        let webrtc_listen_ip: IpAddr = session_listen_addr.ip();
+    pub async fn listen(socket_address: SocketAddr, config: Option<Config>) -> WebrtcServerSocket {
+        let webrtc_listen_ip: IpAddr = socket_address.ip();
         let webrtc_listen_port =
             get_available_port(webrtc_listen_ip.to_string().as_str()).expect("no available port");
         let webrtc_listen_addr = SocketAddr::new(webrtc_listen_ip, webrtc_listen_port);
@@ -93,7 +91,7 @@ impl WebrtcServerSocket {
         });
 
         tokio::spawn(async move {
-            Server::bind(&session_listen_addr)
+            Server::bind(&socket_address)
                 .serve(make_svc)
                 .await
                 .expect("HTTP session server has died");

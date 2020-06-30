@@ -2,10 +2,11 @@
 extern crate log;
 
 use simple_logger;
+use std::net::SocketAddr;
 
 use naia_server_socket::{find_my_ip_address, Config, Packet, ServerSocket, SocketEvent};
 
-const SERVER_PORT: &str = "14191";
+const SERVER_PORT: u16 = 14191;
 const PING_MSG: &str = "ping";
 const PONG_MSG: &str = "pong";
 
@@ -16,12 +17,11 @@ async fn main() {
     info!("Naia Server Socket Example Started");
 
     let current_ip_address = find_my_ip_address().expect("can't find ip address");
-    let current_socket_address = format!("{}:{}", current_ip_address, SERVER_PORT);
+    let current_socket_address = SocketAddr::new(current_ip_address, SERVER_PORT);
 
     let config = Config::default();
 
-    let mut server_socket =
-        ServerSocket::listen(current_socket_address.as_str(), Some(config)).await;
+    let mut server_socket = ServerSocket::listen(current_socket_address, Some(config)).await;
 
     let mut sender = server_socket.get_sender();
 

@@ -20,12 +20,10 @@ pub struct UdpClientSocket {
 }
 
 impl UdpClientSocket {
-    pub fn connect(server_address: &str, _: Option<Config>) -> UdpClientSocket {
+    pub fn connect(server_socket_address: SocketAddr, _: Option<Config>) -> UdpClientSocket {
         let client_ip_address = find_my_ip_address().expect("cannot find current ip address");
         let free_socket = find_available_port(&client_ip_address).expect("no available ports");
         let client_socket_address = format!("{}:{}", client_ip_address, free_socket);
-
-        let server_socket_address: SocketAddr = server_address.parse().unwrap();
 
         let socket = Rc::new(RefCell::new(
             UdpSocket::bind(client_socket_address).unwrap(),
