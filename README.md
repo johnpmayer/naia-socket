@@ -7,7 +7,7 @@
 [s3]: https://img.shields.io/badge/license-MIT%2FApache-blue.svg
 [l3]: docs/LICENSE-MIT
 
-# Naia Socket
+# naia-socket
 
 A cross-platform (including Wasm) Socket API that wraps unreliable & unordered communication, using WebRTC & UDP.
 
