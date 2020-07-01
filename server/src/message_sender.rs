@@ -32,10 +32,12 @@ cfg_if! {
     }
     else if #[cfg(feature = "use-udp")] {
         // UDP Message Sender
+        use tokio::net::UdpSocket;
+
         use std::{
             rc::Rc,
             cell::RefCell,
-            net::{SocketAddr, UdpSocket},
+            net::SocketAddr,
             collections::HashSet,
         };
 
@@ -64,7 +66,7 @@ cfg_if! {
                 }
 
                 //send it
-                if let Err(err) = self.socket.borrow().send_to(&packet.payload(), address) {
+                if let Err(err) = self.socket.as_ref().borrow_mut().send_to(&packet.payload(), address).await {
                     return Err(Box::new(err));
                 }
                 else {
