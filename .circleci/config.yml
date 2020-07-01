@@ -36,6 +36,22 @@ jobs:
           name: Build WebRTC Server
           working_directory: ~/project/server
           command: cargo build --all --all-targets --features "use-webrtc"
+      - run:
+          name: Build Client
+          working_directory: ~/project/client
+          command: cargo build --all --all-targets
+      - run:
+          name: Build Shared
+          working_directory: ~/project/shared
+          command: cargo build --all --all-targets
+      - run:
+          name: Build Server Example (UDP)
+          working_directory: ~/project/examples/server
+          command: cargo build --all --all-targets --features "use-udp"
+      - run:
+          name: Build Server Example (WebRTC)
+          working_directory: ~/project/examples/server
+          command: cargo build --all --all-targets --features "use-webrtc"
       - save_cache:
           paths:
             - /usr/local/cargo/registry
