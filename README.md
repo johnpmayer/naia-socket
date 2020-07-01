@@ -1,4 +1,4 @@
-[![Build Status](https://img.shields.io/circleci/project/github/naia-rs/naia-socket.svg)](https://circleci.com/gh/connorcarpenter/naia-socket)
+[![Build Status](https://img.shields.io/circleci/project/github/naia-rs/naia-socket.svg)](https://circleci.com/gh/naia-rs/naia-socket)
 [![Latest Version](https://img.shields.io/crates/v/naia-server-socket.svg)](https://crates.io/crates/naia-server-socket)
 [![API Documentation](https://docs.rs/naia-server-socket/badge.svg)](https://docs.rs/naia-server-socket)
 ![](https://tokei.rs/b1/github/naia-rs/naia-socket)
