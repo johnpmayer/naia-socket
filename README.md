@@ -13,7 +13,6 @@ A cross-platform (including Wasm) Socket API that wraps unreliable & unordered c
 
 Utilizes Kyren's wonderful [webrtc-unreliable](https://github.com/kyren/webrtc-unreliable)
 
-
 ## Examples
 
 ### Server:
