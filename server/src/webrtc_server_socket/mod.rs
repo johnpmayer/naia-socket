@@ -5,10 +5,7 @@ use hyper::{
     Body, Error as HyperError, Method, Response, Server, StatusCode,
 };
 use log::info;
-use std::{
-    collections::HashSet,
-    net::{IpAddr, SocketAddr, TcpListener},
-};
+use std::net::{IpAddr, SocketAddr, TcpListener};
 use webrtc_unreliable::{
     MessageResult, MessageType, RecvError, SendError, Server as InnerRtcServer, SessionEndpoint,
 };
@@ -25,12 +22,11 @@ const CLIENT_CHANNEL_SIZE: usize = 8;
 
 #[derive(Debug)]
 pub struct WebrtcServerSocket {
+    rtc_server: RtcServer,
     to_client_sender: mpsc::Sender<Packet>,
     to_client_receiver: mpsc::Receiver<Packet>,
     tick_timer: Interval,
-    rtc_server: RtcServer,
-    clients: HashSet<SocketAddr>,
-    message_buffer: Vec<u8>,
+    receive_buffer: Vec<u8>,
 }
 
 impl WebrtcServerSocket {
@@ -50,12 +46,12 @@ impl WebrtcServerSocket {
         };
 
         let socket = WebrtcServerSocket {
+            rtc_server,
             to_client_sender,
             to_client_receiver,
-            rtc_server,
             tick_timer: time::interval(tick_interval),
-            clients: HashSet::new(),
-            message_buffer: vec![0; 0x10000], // Hopefully get rid of this one day..
+            receive_buffer: vec![0; 0x10000], /* Hopefully get rid of this one day.. next version
+                                               * of webrtc-unreliable should make that happen */
         };
 
         let session_endpoint = socket.rtc_server.session_endpoint();
@@ -115,9 +111,9 @@ impl WebrtcServerSocket {
                 let to_client_receiver_next = self.to_client_receiver.next().fuse();
                 pin_mut!(to_client_receiver_next);
 
-                let message_buffer = &mut self.message_buffer;
+                let receive_buffer = &mut self.receive_buffer;
                 let rtc_server = &mut self.rtc_server;
-                let from_client_message_receiver_next = rtc_server.recv(message_buffer).fuse();
+                let from_client_message_receiver_next = rtc_server.recv(receive_buffer).fuse();
                 pin_mut!(from_client_message_receiver_next);
 
                 select! {
@@ -139,10 +135,7 @@ impl WebrtcServerSocket {
                 Next::FromClientMessage(from_client_message) => match from_client_message {
                     Ok(message_result) => {
                         let address = message_result.remote_addr;
-                        if !self.clients.contains(&address) {
-                            self.clients.insert(address);
-                        }
-                        let payload: Vec<u8> = self.message_buffer[0..message_result.message_len]
+                        let payload: Vec<u8> = self.receive_buffer[0..message_result.message_len]
                             .iter()
                             .cloned()
                             .collect();
@@ -178,10 +171,6 @@ impl WebrtcServerSocket {
 
     pub fn get_sender(&mut self) -> MessageSender {
         return MessageSender::new(self.to_client_sender.clone());
-    }
-
-    pub fn get_clients(&mut self) -> Vec<SocketAddr> {
-        self.clients.iter().cloned().collect()
     }
 }
 
