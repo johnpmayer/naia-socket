@@ -1,3 +1,4 @@
+use async_trait::async_trait;
 use hyper::{
     header::{self, HeaderValue},
     server::conn::AddrStream,
@@ -15,7 +16,7 @@ use futures_util::{pin_mut, select, FutureExt, StreamExt};
 use tokio::time::{self, Interval};
 
 use super::{message_sender::MessageSender, socket_event::SocketEvent};
-use crate::{error::NaiaServerSocketError, Packet};
+use crate::{error::NaiaServerSocketError, Packet, ServerSocketTrait};
 use naia_socket_shared::Config;
 
 const CLIENT_CHANNEL_SIZE: usize = 8;
@@ -29,8 +30,9 @@ pub struct WebrtcServerSocket {
     receive_buffer: Vec<u8>,
 }
 
-impl WebrtcServerSocket {
-    pub async fn listen(socket_address: SocketAddr, config: Option<Config>) -> WebrtcServerSocket {
+#[async_trait]
+impl ServerSocketTrait for WebrtcServerSocket {
+    async fn listen(socket_address: SocketAddr, config: Option<Config>) -> WebrtcServerSocket {
         let webrtc_listen_ip: IpAddr = socket_address.ip();
         let webrtc_listen_port =
             get_available_port(webrtc_listen_ip.to_string().as_str()).expect("no available port");
@@ -96,7 +98,7 @@ impl WebrtcServerSocket {
         socket
     }
 
-    pub async fn receive(&mut self) -> Result<SocketEvent, NaiaServerSocketError> {
+    async fn receive(&mut self) -> Result<SocketEvent, NaiaServerSocketError> {
         enum Next {
             FromClientMessage(Result<MessageResult, RecvError>),
             ToClientMessage(Packet),
@@ -169,7 +171,7 @@ impl WebrtcServerSocket {
         }
     }
 
-    pub fn get_sender(&mut self) -> MessageSender {
+    fn get_sender(&mut self) -> MessageSender {
         return MessageSender::new(self.to_client_sender.clone());
     }
 }
