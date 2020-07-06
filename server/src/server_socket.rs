@@ -1,11 +1,7 @@
 use async_trait::async_trait;
-use std::{net::SocketAddr, time::Duration};
+use std::net::SocketAddr;
 
-use super::{
-    message_sender::MessageSender,
-    socket_event::SocketEvent,
-    timer_handler::{TimerHandler, TimerKey},
-};
+use super::{message_sender::MessageSender, socket_event::SocketEvent};
 use crate::error::NaiaServerSocketError;
 use naia_socket_shared::Config;
 
@@ -20,8 +16,6 @@ pub trait ServerSocketTrait {
     /// Gets a MessageSender you can use to send messages through the Server
     /// Socket
     fn get_sender(&mut self) -> MessageSender;
-    fn create_timer(&mut self, timer_interval: Duration) -> TimerKey;
-    fn delete_timer(&mut self, key: TimerKey);
 }
 
 cfg_if! {
