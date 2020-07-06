@@ -1,6 +1,4 @@
-use std::{
-    net::{IpAddr, Ipv4Addr, Ipv6Addr},
-};
+use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 
 /// Helper method to find local IP address, if possible
 pub fn find_my_ip_address() -> Option<IpAddr> {
