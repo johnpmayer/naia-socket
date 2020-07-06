@@ -1,6 +1,6 @@
 [package]
 name = "naia-client-socket"
-version = "0.2.0"
+version = "0.2.1"
 authors = ["connorcarpenter <connorcarpenter@gmail.com>"]
 description = "Abstraction to expose common API over a UDP socket on Linux, and a unreliable WebRTC datachannel on the browser"
 documentation = "https://docs.rs/naia-client-socket"
@@ -17,7 +17,7 @@ maintenance = { status = "actively-developed" }
 
 [dependencies]
 log = "0.4"
-naia-socket-shared = { version = "0.1.0", path = "../shared" }
+naia-socket-shared = { version = "0.1.1", path = "../shared" }
 cfg-if = "0.1.10"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
