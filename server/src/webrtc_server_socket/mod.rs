@@ -15,7 +15,9 @@ use futures_channel::mpsc;
 use futures_util::{pin_mut, select, FutureExt, StreamExt};
 use tokio::time::{self, Interval};
 
-use super::{message_sender::MessageSender, socket_event::SocketEvent};
+use super::{
+    message_sender::MessageSender, socket_event::SocketEvent, timer_handler::TimerHandler,
+};
 use crate::{error::NaiaServerSocketError, Packet, ServerSocketTrait};
 use naia_socket_shared::Config;
 
@@ -26,13 +28,13 @@ pub struct WebrtcServerSocket {
     rtc_server: RtcServer,
     to_client_sender: mpsc::Sender<Packet>,
     to_client_receiver: mpsc::Receiver<Packet>,
-    tick_timer: Interval,
+    timer_handler: TimerHandler,
     receive_buffer: Vec<u8>,
 }
 
 #[async_trait]
 impl ServerSocketTrait for WebrtcServerSocket {
-    async fn listen(socket_address: SocketAddr, config: Option<Config>) -> WebrtcServerSocket {
+    async fn listen(socket_address: SocketAddr, _: Option<Config>) -> WebrtcServerSocket {
         let webrtc_listen_ip: IpAddr = socket_address.ip();
         let webrtc_listen_port =
             get_available_port(webrtc_listen_ip.to_string().as_str()).expect("no available port");
@@ -42,16 +44,11 @@ impl ServerSocketTrait for WebrtcServerSocket {
 
         let rtc_server = RtcServer::new(webrtc_listen_addr).await;
 
-        let tick_interval = match config {
-            Some(config) => config.tick_interval,
-            None => Config::default().tick_interval,
-        };
-
         let socket = WebrtcServerSocket {
             rtc_server,
             to_client_sender,
             to_client_receiver,
-            tick_timer: time::interval(tick_interval),
+            timer_handler: TimerHandler::new(),
             receive_buffer: vec![0; 0x10000], /* Hopefully get rid of this one day.. next version
                                                * of webrtc-unreliable should make that happen */
         };
@@ -107,30 +104,46 @@ impl ServerSocketTrait for WebrtcServerSocket {
 
         loop {
             let next = {
-                let timer_next = self.tick_timer.tick().fuse();
-                pin_mut!(timer_next);
-
-                let to_client_receiver_next = self.to_client_receiver.next().fuse();
-                pin_mut!(to_client_receiver_next);
-
+                let futures = self.timer_handler.get_futures();
+                futures.push(self.to_client_receiver.next());
                 let receive_buffer = &mut self.receive_buffer;
                 let rtc_server = &mut self.rtc_server;
-                let from_client_message_receiver_next = rtc_server.recv(receive_buffer).fuse();
-                pin_mut!(from_client_message_receiver_next);
+                futures.push(rtc_server.recv(receive_buffer));
 
-                select! {
-                    from_client_result = from_client_message_receiver_next => {
-                        Next::FromClientMessage(from_client_result)
+                match futures.next().await {
+                    Some(result) => {
+                        println!("something");
                     }
-                    to_client_message = to_client_receiver_next => {
-                        Next::ToClientMessage(
-                            to_client_message.expect("to server message receiver closed")
-                        )
-                    }
-                    _ = timer_next => {
-                        Next::PeriodicTimer
+                    _ => {
+                        println!("nothin")
                     }
                 }
+
+
+//                let timer_next = self.tick_timer.tick().fuse();
+//                pin_mut!(timer_next);
+//
+//                let to_client_receiver_next = self.to_client_receiver.next().fuse();
+//                pin_mut!(to_client_receiver_next);
+//
+//                let receive_buffer = &mut self.receive_buffer;
+//                let rtc_server = &mut self.rtc_server;
+//                let from_client_message_receiver_next = rtc_server.recv(receive_buffer).fuse();
+//                pin_mut!(from_client_message_receiver_next);
+//
+//                select! {
+//                    from_client_result = from_client_message_receiver_next => {
+//                        Next::FromClientMessage(from_client_result)
+//                    }
+//                    to_client_message = to_client_receiver_next => {
+//                        Next::ToClientMessage(
+//                            to_client_message.expect("to server message receiver closed")
+//                        )
+//                    }
+//                    _ = timer_next => {
+//                        Next::PeriodicTimer
+//                    }
+//                }
             };
 
             match next {

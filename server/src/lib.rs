@@ -50,6 +50,7 @@ mod error;
 mod message_sender;
 mod packet;
 mod socket_event;
+mod timer_handler;
 
 pub use error::NaiaServerSocketError;
 pub use message_sender::MessageSender;

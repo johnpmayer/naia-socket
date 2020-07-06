@@ -1,3 +1,4 @@
+use super::timer_handler::TimerKey;
 use crate::Packet;
 
 /// An Event that can be emitted by the Server Socket
@@ -7,5 +8,5 @@ pub enum SocketEvent {
     Packet(Packet),
     /// A Tick event. The duration between Ticks is defined in the Config given
     /// to the Server Socket
-    Tick,
+    Tick(TimerKey),
 }
