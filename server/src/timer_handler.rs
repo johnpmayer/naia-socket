@@ -1,9 +1,13 @@
-use futures::stream::{FuturesUnordered, StreamExt};
+use futures_util::future::FutureExt;
+use futures_util::stream::futures_unordered::FuturesUnordered;
 use std::{collections::HashMap, time::Duration};
 use tokio::time::{self, Interval};
+use futures::prelude::*;
+use tokio::time::Instant;
 
 pub type TimerKey = u32;
 
+#[derive(Debug)]
 pub struct TimerHandler {
     current_timer_key: TimerKey,
     recycled_timer_keys: Vec<TimerKey>,
@@ -33,10 +37,10 @@ impl TimerHandler {
         }
     }
 
-    pub fn get_futures<T>(&self) -> FuturesUnordered<T> {
-        let mut futures = FuturesUnordered::new();
-        for (timer_key, timer_interval) in self.timer_map {
-            let future = timer_interval.tick().then(move || timer_key);
+    pub fn get_futures(&self) -> FuturesUnordered<impl Future> {
+        let mut futures = FuturesUnordered::<TimerKey>::new();
+        for (timer_key, timer_interval) in self.timer_map.iter() {
+            let future: bool = timer_interval.tick();
             futures.push(future);
         }
         return futures;

@@ -11,12 +11,14 @@ use webrtc_unreliable::{
     MessageResult, MessageType, RecvError, SendError, Server as InnerRtcServer, SessionEndpoint,
 };
 
+use std::time::Duration;
+use futures::prelude::*;
 use futures_channel::mpsc;
 use futures_util::{pin_mut, select, FutureExt, StreamExt};
 use tokio::time::{self, Interval};
 
 use super::{
-    message_sender::MessageSender, socket_event::SocketEvent, timer_handler::TimerHandler,
+    message_sender::MessageSender, socket_event::SocketEvent, timer_handler::{TimerHandler, TimerKey},
 };
 use crate::{error::NaiaServerSocketError, Packet, ServerSocketTrait};
 use naia_socket_shared::Config;
@@ -34,6 +36,14 @@ pub struct WebrtcServerSocket {
 
 #[async_trait]
 impl ServerSocketTrait for WebrtcServerSocket {
+
+    fn create_timer(&mut self, timer_interval: Duration) -> TimerKey {
+        return 0;
+    }
+    fn delete_timer(&mut self, key: TimerKey) {
+        return;
+    }
+
     async fn listen(socket_address: SocketAddr, _: Option<Config>) -> WebrtcServerSocket {
         let webrtc_listen_ip: IpAddr = socket_address.ip();
         let webrtc_listen_port =
@@ -104,20 +114,20 @@ impl ServerSocketTrait for WebrtcServerSocket {
 
         loop {
             let next = {
-                let futures = self.timer_handler.get_futures();
-                futures.push(self.to_client_receiver.next());
-                let receive_buffer = &mut self.receive_buffer;
-                let rtc_server = &mut self.rtc_server;
-                futures.push(rtc_server.recv(receive_buffer));
+//                let futures = self.timer_handler.get_futures();
+//                futures.push(self.to_client_receiver.next());
+//                let receive_buffer = &mut self.receive_buffer;
+//                let rtc_server = &mut self.rtc_server;
+//                futures.push(rtc_server.recv(receive_buffer).into_stream().next());
 
-                match futures.next().await {
-                    Some(result) => {
-                        println!("something");
-                    }
-                    _ => {
-                        println!("nothin")
-                    }
-                }
+//                match futures.next().await {
+//                    Some(result) => {
+//                        println!("something");
+//                    }
+//                    _ => {
+//                        println!("nothin")
+//                    }
+//                }
 
 
 //                let timer_next = self.tick_timer.tick().fuse();
@@ -146,41 +156,41 @@ impl ServerSocketTrait for WebrtcServerSocket {
 //                }
             };
 
-            match next {
-                Next::FromClientMessage(from_client_message) => match from_client_message {
-                    Ok(message_result) => {
-                        let address = message_result.remote_addr;
-                        let payload: Vec<u8> = self.receive_buffer[0..message_result.message_len]
-                            .iter()
-                            .cloned()
-                            .collect();
-                        return Ok(SocketEvent::Packet(Packet::new_raw(
-                            address,
-                            payload.into_boxed_slice(),
-                        )));
-                    }
-                    Err(err) => {
-                        return Err(NaiaServerSocketError::Wrapped(Box::new(err)));
-                    }
-                },
-                Next::ToClientMessage(packet) => {
-                    let address = packet.address();
-
-                    match self
-                        .rtc_server
-                        .send(packet.payload(), MessageType::Binary, &address)
-                        .await
-                    {
-                        Err(_) => {
-                            return Err(NaiaServerSocketError::SendError(address));
-                        }
-                        _ => {}
-                    }
-                }
-                Next::PeriodicTimer => {
-                    return Ok(SocketEvent::Tick);
-                }
-            }
+//            match next {
+//                Next::FromClientMessage(from_client_message) => match from_client_message {
+//                    Ok(message_result) => {
+//                        let address = message_result.remote_addr;
+//                        let payload: Vec<u8> = self.receive_buffer[0..message_result.message_len]
+//                            .iter()
+//                            .cloned()
+//                            .collect();
+//                        return Ok(SocketEvent::Packet(Packet::new_raw(
+//                            address,
+//                            payload.into_boxed_slice(),
+//                        )));
+//                    }
+//                    Err(err) => {
+//                        return Err(NaiaServerSocketError::Wrapped(Box::new(err)));
+//                    }
+//                },
+//                Next::ToClientMessage(packet) => {
+//                    let address = packet.address();
+//
+//                    match self
+//                        .rtc_server
+//                        .send(packet.payload(), MessageType::Binary, &address)
+//                        .await
+//                    {
+//                        Err(_) => {
+//                            return Err(NaiaServerSocketError::SendError(address));
+//                        }
+//                        _ => {}
+//                    }
+//                }
+//                Next::PeriodicTimer => {
+//                    return Ok(SocketEvent::Tick);
+//                }
+//            }
         }
     }
 
