@@ -4,7 +4,9 @@ extern crate log;
 use simple_logger;
 use std::net::SocketAddr;
 
-use naia_server_socket::{find_my_ip_address, Config, Packet, ServerSocket, SocketEvent};
+use naia_server_socket::{
+    find_my_ip_address, Config, Packet, ServerSocket, ServerSocketTrait, SocketEvent,
+};
 
 const SERVER_PORT: u16 = 14191;
 const PING_MSG: &str = "ping";

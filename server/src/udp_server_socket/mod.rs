@@ -1,3 +1,4 @@
+use async_trait::async_trait;
 use futures_channel::mpsc;
 use futures_util::{pin_mut, select, FutureExt, StreamExt};
 use std::{io::Error as IoError, net::SocketAddr};
@@ -8,7 +9,7 @@ use tokio::{
 
 use naia_socket_shared::Config;
 
-use crate::{error::NaiaServerSocketError, Packet};
+use crate::{error::NaiaServerSocketError, Packet, ServerSocketTrait};
 
 use super::{message_sender::MessageSender, socket_event::SocketEvent};
 
@@ -23,8 +24,9 @@ pub struct UdpServerSocket {
     receive_buffer: Vec<u8>,
 }
 
-impl UdpServerSocket {
-    pub async fn listen(socket_address: SocketAddr, config: Option<Config>) -> UdpServerSocket {
+#[async_trait]
+impl ServerSocketTrait for UdpServerSocket {
+    async fn listen(socket_address: SocketAddr, config: Option<Config>) -> UdpServerSocket {
         let socket = UdpSocket::bind(socket_address).await.unwrap();
 
         let tick_interval = match config {
@@ -44,7 +46,7 @@ impl UdpServerSocket {
         }
     }
 
-    pub async fn receive(&mut self) -> Result<SocketEvent, NaiaServerSocketError> {
+    async fn receive(&mut self) -> Result<SocketEvent, NaiaServerSocketError> {
         enum Next {
             FromClientMessage(Result<(usize, SocketAddr), IoError>),
             ToClientMessage(Packet),
@@ -112,7 +114,7 @@ impl UdpServerSocket {
         }
     }
 
-    pub fn get_sender(&mut self) -> MessageSender {
+    fn get_sender(&mut self) -> MessageSender {
         return MessageSender::new(self.to_client_sender.clone());
     }
 }
