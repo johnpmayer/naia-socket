@@ -24,9 +24,8 @@ pub struct UdpServerSocket {
     receive_buffer: Vec<u8>,
 }
 
-#[async_trait]
-impl ServerSocketTrait for UdpServerSocket {
-    async fn listen(socket_address: SocketAddr, config: Option<Config>) -> UdpServerSocket {
+impl UdpServerSocket {
+    pub async fn listen(socket_address: SocketAddr, config: Option<Config>) -> Self {
         let socket = UdpSocket::bind(socket_address).await.unwrap();
 
         let tick_interval = match config {
@@ -45,7 +44,10 @@ impl ServerSocketTrait for UdpServerSocket {
                                                * of webrtc-unreliable should make that happen */
         }
     }
+}
 
+#[async_trait]
+impl ServerSocketTrait for UdpServerSocket {
     async fn receive(&mut self) -> Result<SocketEvent, NaiaServerSocketError> {
         enum Next {
             FromClientMessage(Result<(usize, SocketAddr), IoError>),

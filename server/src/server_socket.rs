@@ -1,16 +1,11 @@
 use async_trait::async_trait;
-use std::net::SocketAddr;
 
 use super::{message_sender::MessageSender, socket_event::SocketEvent};
 use crate::error::NaiaServerSocketError;
-use naia_socket_shared::Config;
 
 /// Defines the functionality of a Naia Server Socket
 #[async_trait]
 pub trait ServerSocketTrait {
-    /// Creates a new Server Socket, listening at a given address, and taking an
-    /// optional Config
-    async fn listen(socket_address: SocketAddr, config: Option<Config>) -> Self;
     /// Receive a new packet from the socket, or a tick event
     async fn receive(&mut self) -> Result<SocketEvent, NaiaServerSocketError>;
     /// Gets a MessageSender you can use to send messages through the Server

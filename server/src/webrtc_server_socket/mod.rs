@@ -30,9 +30,8 @@ pub struct WebrtcServerSocket {
     receive_buffer: Vec<u8>,
 }
 
-#[async_trait]
-impl ServerSocketTrait for WebrtcServerSocket {
-    async fn listen(socket_address: SocketAddr, config: Option<Config>) -> WebrtcServerSocket {
+impl WebrtcServerSocket {
+    pub async fn listen(socket_address: SocketAddr, config: Option<Config>) -> Self {
         let webrtc_listen_ip: IpAddr = socket_address.ip();
         let webrtc_listen_port =
             get_available_port(webrtc_listen_ip.to_string().as_str()).expect("no available port");
@@ -97,7 +96,10 @@ impl ServerSocketTrait for WebrtcServerSocket {
 
         socket
     }
+}
 
+#[async_trait]
+impl ServerSocketTrait for WebrtcServerSocket {
     async fn receive(&mut self) -> Result<SocketEvent, NaiaServerSocketError> {
         enum Next {
             FromClientMessage(Result<MessageResult, RecvError>),
