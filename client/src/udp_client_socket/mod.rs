@@ -7,7 +7,7 @@ use std::{
     rc::Rc,
 };
 
-use super::{message_sender::MessageSender, socket_event::SocketEvent};
+use super::{message_sender::MessageSender, socket_event::SocketEvent, client_socket::ClientSocketTrait};
 use crate::{error::NaiaClientSocketError, Packet};
 use naia_socket_shared::{find_available_port, find_my_ip_address, Config};
 
@@ -42,8 +42,10 @@ impl UdpClientSocket {
             message_sender,
         }
     }
+}
 
-    pub fn receive(&mut self) -> Result<SocketEvent, NaiaClientSocketError> {
+impl ClientSocketTrait for UdpClientSocket {
+    fn receive(&mut self) -> Result<SocketEvent, NaiaClientSocketError> {
         let buffer: &mut [u8] = self.receive_buffer.as_mut();
         match self
             .socket
@@ -70,11 +72,7 @@ impl UdpClientSocket {
         }
     }
 
-    pub fn get_sender(&mut self) -> MessageSender {
+    fn get_sender(&mut self) -> MessageSender {
         return self.message_sender.clone();
-    }
-
-    pub fn server_address(&self) -> SocketAddr {
-        return self.address;
     }
 }

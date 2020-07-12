@@ -34,7 +34,7 @@ mod message_sender;
 mod packet;
 mod socket_event;
 
-pub use client_socket::ClientSocket;
+pub use client_socket::{ClientSocket, ClientSocketTrait};
 pub use error::NaiaClientSocketError;
 pub use message_sender::MessageSender;
 pub use naia_socket_shared::{find_my_ip_address, Config};

@@ -3,7 +3,7 @@ use log::info;
 
 use std::{cell::RefCell, collections::VecDeque, net::SocketAddr, rc::Rc};
 
-use super::{message_sender::MessageSender, socket_event::SocketEvent};
+use super::{message_sender::MessageSender, socket_event::SocketEvent, client_socket::ClientSocketTrait};
 use crate::{error::NaiaClientSocketError, Packet};
 
 use naia_socket_shared::Config;
@@ -33,8 +33,10 @@ impl WebrtcClientSocket {
             dropped_outgoing_messages,
         }
     }
+}
 
-    pub fn receive(&mut self) -> Result<SocketEvent, NaiaClientSocketError> {
+impl ClientSocketTrait for WebrtcClientSocket {
+    fn receive(&mut self) -> Result<SocketEvent, NaiaClientSocketError> {
         if !self.dropped_outgoing_messages.borrow().is_empty() {
             if let Some(dropped_packets) = {
                 let mut dom = self.dropped_outgoing_messages.borrow_mut();
@@ -75,12 +77,8 @@ impl WebrtcClientSocket {
         }
     }
 
-    pub fn get_sender(&mut self) -> MessageSender {
+    fn get_sender(&mut self) -> MessageSender {
         return self.message_sender.clone();
-    }
-
-    pub fn server_address(&self) -> SocketAddr {
-        return self.address;
     }
 }
 
