@@ -28,16 +28,16 @@ cfg_if! {
     }
 }
 
+pub use naia_socket_shared::LinkConditionerConfig;
+
 mod client_socket;
 mod error;
 mod link_conditioner;
 mod message_sender;
 mod packet;
-mod socket_event;
 
 pub use client_socket::{ClientSocket, ClientSocketTrait};
 pub use error::NaiaClientSocketError;
 pub use message_sender::MessageSender;
 pub use naia_socket_shared::find_my_ip_address;
 pub use packet::Packet;
-pub use socket_event::SocketEvent;

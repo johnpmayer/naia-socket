@@ -1,13 +1,16 @@
-use naia_socket_shared::LinkConditionerConfig;
+use async_trait::async_trait;
+
+use naia_socket_shared::{Instant, LinkConditionerConfig, TimeQueue};
 
 use super::{
-    error::NaiaServerSocketError, message_sender::MessageSender, server_socket::ServerSocketTrait,
-    socket_event::SocketEvent,
+    error::NaiaServerSocketError, message_sender::MessageSender, packet::Packet,
+    server_socket::ServerSocketTrait,
 };
 
 pub struct LinkConditioner {
     config: LinkConditionerConfig,
     inner_socket: Box<dyn ServerSocketTrait>,
+    result_queue: TimeQueue<Packet>,
 }
 
 impl LinkConditioner {
@@ -15,33 +18,17 @@ impl LinkConditioner {
         LinkConditioner {
             config: config.clone(),
             inner_socket: socket,
+            result_queue: TimeQueue::new(),
         }
     }
 }
 
+#[async_trait]
 impl ServerSocketTrait for LinkConditioner {
-    fn receive(&mut self) -> Result<SocketEvent, NaiaServerSocketError> {
-        loop {
-            match self.inner_socket.receive() {
-                Ok(event) => match event {
-                    SocketEvent::None => {
-                        break;
-                    }
-                    SocketEvent::Packet(packet) => {
-                        self.process_result(Ok(SocketEvent::Packet(packet)));
-                    }
-                },
-                Err(error) => {
-                    self.process_result(Err(error));
-                }
-            }
-        }
-
-        if self.has_result() {
-            self.get_result()
-        } else {
-            Ok(SocketEvent::None)
-        }
+    async fn receive(&mut self) -> Result<Packet, NaiaServerSocketError> {
+        /// TODO: Use TimeQueue
+        let result = self.inner_socket.receive().await;
+        result
     }
 
     fn get_sender(&mut self) -> MessageSender {
@@ -59,15 +46,15 @@ impl ServerSocketTrait for LinkConditioner {
 }
 
 impl LinkConditioner {
-    fn process_result(&mut self, result: Result<SocketEvent, NaiaServerSocketError>) {
-        unimplemented!()
+    fn process_packet(&mut self, packet: Packet) {
+        self.result_queue.add_item(Instant::now(), packet);
     }
 
-    fn has_result(&self) -> bool {
-        unimplemented!()
+    fn has_packet(&self) -> bool {
+        self.result_queue.has_item()
     }
 
-    fn get_result(&mut self) -> Result<SocketEvent, NaiaServerSocketError> {
-        unimplemented!()
+    fn get_packet(&mut self) -> Packet {
+        self.result_queue.pop_item().unwrap()
     }
 }

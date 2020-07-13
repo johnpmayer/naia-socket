@@ -11,7 +11,7 @@ use naia_socket_shared::{find_available_port, find_my_ip_address, LinkConditione
 
 use super::{
     client_socket::ClientSocketTrait, link_conditioner::LinkConditioner,
-    message_sender::MessageSender, socket_event::SocketEvent,
+    message_sender::MessageSender,
 };
 
 use crate::{error::NaiaClientSocketError, Packet};
@@ -50,7 +50,7 @@ impl UdpClientSocket {
 }
 
 impl ClientSocketTrait for UdpClientSocket {
-    fn receive(&mut self) -> Result<SocketEvent, NaiaClientSocketError> {
+    fn receive(&mut self) -> Result<Option<Packet>, NaiaClientSocketError> {
         let buffer: &mut [u8] = self.receive_buffer.as_mut();
         match self
             .socket
@@ -60,7 +60,7 @@ impl ClientSocketTrait for UdpClientSocket {
         {
             Ok((payload, address)) => {
                 if address == self.address {
-                    return Ok(SocketEvent::Packet(Packet::new(payload.to_vec())));
+                    return Ok(Some(Packet::new(payload.to_vec())));
                 } else {
                     return Err(NaiaClientSocketError::Message(
                         "Unknown sender.".to_string(),
@@ -69,7 +69,7 @@ impl ClientSocketTrait for UdpClientSocket {
             }
             Err(ref e) if e.kind() == ErrorKind::WouldBlock => {
                 //just didn't receive anything this time
-                return Ok(SocketEvent::None);
+                return Ok(None);
             }
             Err(e) => {
                 return Err(NaiaClientSocketError::Wrapped(Box::new(e)));

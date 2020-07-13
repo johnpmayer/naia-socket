@@ -26,3 +26,9 @@ pub use link_conditioner_config::LinkConditionerConfig;
 
 mod timer;
 pub use timer::Timer;
+
+mod instant;
+pub use instant::Instant;
+
+mod time_queue;
+pub use time_queue::TimeQueue;

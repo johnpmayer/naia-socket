@@ -1,7 +1,9 @@
 use log::info;
 use std::{net::SocketAddr, time::Duration};
 
-use naia_client_socket::{ClientSocket, ClientSocketTrait, MessageSender, Packet, SocketEvent};
+use naia_client_socket::{
+    ClientSocket, ClientSocketTrait, LinkConditionerConfig, MessageSender, Packet,
+};
 
 const PING_MSG: &str = "ping";
 const PONG_MSG: &str = "pong";
@@ -40,7 +42,8 @@ impl App {
 
         let server_socket_address = SocketAddr::new(server_ip_address, SERVER_PORT);
 
-        let mut client_socket = ClientSocket::connect(server_socket_address);
+        let mut client_socket = ClientSocket::connect(server_socket_address)
+            .with_link_conditioner(&LinkConditionerConfig::poor_condition());
         let mut message_sender = client_socket.get_sender();
 
         message_sender
@@ -60,7 +63,7 @@ impl App {
             match self.client_socket.receive() {
                 Ok(event) => {
                     match event {
-                        SocketEvent::Packet(packet) => {
+                        Some(packet) => {
                             let message = String::from_utf8_lossy(packet.payload());
                             info!("Client recv: {}", message);
 
@@ -73,7 +76,7 @@ impl App {
                                     .expect("send error");
                             }
                         }
-                        SocketEvent::None => {
+                        None => {
                             //info!("Client non-event");
                             return;
                         }

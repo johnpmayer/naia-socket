@@ -46,7 +46,10 @@ cfg_if! {
     }
 }
 
+pub use naia_socket_shared::LinkConditionerConfig;
+
 mod error;
+mod link_conditioner;
 mod message_sender;
 mod packet;
 

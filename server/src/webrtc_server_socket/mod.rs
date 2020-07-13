@@ -15,7 +15,7 @@ use futures_channel::mpsc;
 use futures_util::{pin_mut, select, FutureExt, StreamExt};
 //use tokio::time::{self, Interval};
 
-use super::message_sender::MessageSender;
+use super::{link_conditioner::LinkConditioner, message_sender::MessageSender};
 use crate::{error::NaiaServerSocketError, Packet, ServerSocketTrait};
 
 const CLIENT_CHANNEL_SIZE: usize = 8;
@@ -30,7 +30,7 @@ pub struct WebrtcServerSocket {
 }
 
 impl WebrtcServerSocket {
-    pub async fn listen(socket_address: SocketAddr) -> Self {
+    pub async fn listen(socket_address: SocketAddr) -> Box<dyn ServerSocketTrait> {
         let webrtc_listen_ip: IpAddr = socket_address.ip();
         let webrtc_listen_port =
             get_available_port(webrtc_listen_ip.to_string().as_str()).expect("no available port");
@@ -88,7 +88,7 @@ impl WebrtcServerSocket {
                 .expect("HTTP session server has died");
         });
 
-        socket
+        Box::new(socket)
     }
 }
 
@@ -165,6 +165,13 @@ impl ServerSocketTrait for WebrtcServerSocket {
 
     fn get_sender(&mut self) -> MessageSender {
         return MessageSender::new(self.to_client_sender.clone());
+    }
+
+    fn with_link_conditioner(
+        self: Box<Self>,
+        config: &LinkConditionerConfig,
+    ) -> Box<dyn ServerSocketTrait> {
+        Box::new(LinkConditioner::new(config, self))
     }
 }
 

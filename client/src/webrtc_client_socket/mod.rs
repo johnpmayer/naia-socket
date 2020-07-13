@@ -5,7 +5,7 @@ use std::{cell::RefCell, collections::VecDeque, net::SocketAddr, rc::Rc};
 
 use super::{
     client_socket::ClientSocketTrait, link_conditioner::LinkConditioner,
-    message_sender::MessageSender, socket_event::SocketEvent,
+    message_sender::MessageSender,
 };
 use crate::{error::NaiaClientSocketError, Packet};
 
@@ -14,7 +14,7 @@ use naia_socket_shared::LinkConditionerConfig;
 #[derive(Debug)]
 pub struct WebrtcClientSocket {
     address: SocketAddr,
-    message_queue: Rc<RefCell<VecDeque<Result<SocketEvent, NaiaClientSocketError>>>>,
+    message_queue: Rc<RefCell<VecDeque<Result<Option<Packet>, NaiaClientSocketError>>>>,
     message_sender: MessageSender,
     dropped_outgoing_messages: Rc<RefCell<VecDeque<Packet>>>,
 }
@@ -39,7 +39,7 @@ impl WebrtcClientSocket {
 }
 
 impl ClientSocketTrait for WebrtcClientSocket {
-    fn receive(&mut self) -> Result<SocketEvent, NaiaClientSocketError> {
+    fn receive(&mut self) -> Result<Option<Packet>, NaiaClientSocketError> {
         if !self.dropped_outgoing_messages.borrow().is_empty() {
             if let Some(dropped_packets) = {
                 let mut dom = self.dropped_outgoing_messages.borrow_mut();
@@ -58,7 +58,7 @@ impl ClientSocketTrait for WebrtcClientSocket {
 
         loop {
             if self.message_queue.borrow().is_empty() {
-                return Ok(SocketEvent::None);
+                return Ok(None);
             }
 
             match self
@@ -67,8 +67,8 @@ impl ClientSocketTrait for WebrtcClientSocket {
                 .pop_front()
                 .expect("message queue shouldn't be empty!")
             {
-                Ok(SocketEvent::Packet(packet)) => {
-                    return Ok(SocketEvent::Packet(packet));
+                Ok(Some(packet)) => {
+                    return Ok(Some(packet));
                 }
                 Ok(inner) => {
                     return Ok(inner);
@@ -131,7 +131,7 @@ pub struct IceServerConfig {
 
 fn webrtc_initialize(
     socket_address: SocketAddr,
-    msg_queue: Rc<RefCell<VecDeque<Result<SocketEvent, NaiaClientSocketError>>>>,
+    msg_queue: Rc<RefCell<VecDeque<Result<Option<Packet>, NaiaClientSocketError>>>>,
 ) -> RtcDataChannel {
     let server_url_str = format!("http://{}/new_rtc_session", socket_address);
 
@@ -165,7 +165,7 @@ fn webrtc_initialize(
                     uarray.copy_to(&mut body[..]);
                     msg_queue_clone_2
                         .borrow_mut()
-                        .push_back(Ok(SocketEvent::Packet(Packet::new(body))));
+                        .push_back(Ok(Some(Packet::new(body))));
                 }
             });
         let channel_onmsg_closure = Closure::wrap(channel_onmsg_func);

@@ -4,9 +4,11 @@ use futures_util::{pin_mut, select, FutureExt, StreamExt};
 use std::{io::Error as IoError, net::SocketAddr};
 use tokio::net::UdpSocket;
 
+use naia_socket_shared::LinkConditionerConfig;
+
 use crate::{error::NaiaServerSocketError, Packet, ServerSocketTrait};
 
-use super::message_sender::MessageSender;
+use super::{link_conditioner::LinkConditioner, message_sender::MessageSender};
 
 const CLIENT_CHANNEL_SIZE: usize = 8;
 
@@ -20,19 +22,19 @@ pub struct UdpServerSocket {
 }
 
 impl UdpServerSocket {
-    pub async fn listen(socket_address: SocketAddr) -> Self {
+    pub async fn listen(socket_address: SocketAddr) -> Box<dyn ServerSocketTrait> {
         let socket = UdpSocket::bind(socket_address).await.unwrap();
 
         let (to_client_sender, to_client_receiver) = mpsc::channel(CLIENT_CHANNEL_SIZE);
 
-        UdpServerSocket {
+        Box::new(UdpServerSocket {
             socket,
             to_client_sender,
             to_client_receiver,
             //            tick_timer: time::interval(tick_interval),
             receive_buffer: vec![0; 0x10000], /* Hopefully get rid of this one day.. next version
                                                * of webrtc-unreliable should make that happen */
-        }
+        })
     }
 }
 
@@ -104,5 +106,12 @@ impl ServerSocketTrait for UdpServerSocket {
 
     fn get_sender(&mut self) -> MessageSender {
         return MessageSender::new(self.to_client_sender.clone());
+    }
+
+    fn with_link_conditioner(
+        self: Box<Self>,
+        config: &LinkConditionerConfig,
+    ) -> Box<dyn ServerSocketTrait> {
+        Box::new(LinkConditioner::new(config, self))
     }
 }

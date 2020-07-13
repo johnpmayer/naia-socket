@@ -1,13 +1,11 @@
 use naia_socket_shared::LinkConditionerConfig;
 
-use super::{
-    error::NaiaClientSocketError, message_sender::MessageSender, socket_event::SocketEvent,
-};
+use super::{error::NaiaClientSocketError, message_sender::MessageSender, packet::Packet};
 
 /// Defines the functionality of a Naia Client Socket
 pub trait ClientSocketTrait {
     /// Receive a new packet from the socket, or a tick event
-    fn receive(&mut self) -> Result<SocketEvent, NaiaClientSocketError>;
+    fn receive(&mut self) -> Result<Option<Packet>, NaiaClientSocketError>;
     /// Gets a MessageSender you can use to send messages through the Server
     /// Socket
     fn get_sender(&mut self) -> MessageSender;

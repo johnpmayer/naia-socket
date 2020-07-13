@@ -2,7 +2,7 @@ use naia_socket_shared::LinkConditionerConfig;
 
 use super::{
     client_socket::ClientSocketTrait, error::NaiaClientSocketError, message_sender::MessageSender,
-    socket_event::SocketEvent,
+    packet::Packet,
 };
 
 pub struct LinkConditioner {
@@ -20,15 +20,15 @@ impl LinkConditioner {
 }
 
 impl ClientSocketTrait for LinkConditioner {
-    fn receive(&mut self) -> Result<SocketEvent, NaiaClientSocketError> {
+    fn receive(&mut self) -> Result<Option<Packet>, NaiaClientSocketError> {
         loop {
             match self.inner_socket.receive() {
                 Ok(event) => match event {
-                    SocketEvent::None => {
+                    None => {
                         break;
                     }
-                    SocketEvent::Packet(packet) => {
-                        self.process_result(Ok(SocketEvent::Packet(packet)));
+                    Some(packet) => {
+                        self.process_result(Ok(Some(packet)));
                     }
                 },
                 Err(error) => {
@@ -40,7 +40,7 @@ impl ClientSocketTrait for LinkConditioner {
         if self.has_result() {
             self.get_result()
         } else {
-            Ok(SocketEvent::None)
+            Ok(None)
         }
     }
 
@@ -59,7 +59,7 @@ impl ClientSocketTrait for LinkConditioner {
 }
 
 impl LinkConditioner {
-    fn process_result(&mut self, result: Result<SocketEvent, NaiaClientSocketError>) {
+    fn process_result(&mut self, result: Result<Option<Packet>, NaiaClientSocketError>) {
         unimplemented!()
     }
 
@@ -67,7 +67,12 @@ impl LinkConditioner {
         unimplemented!()
     }
 
-    fn get_result(&mut self) -> Result<SocketEvent, NaiaClientSocketError> {
+    fn get_result(&mut self) -> Result<Option<Packet>, NaiaClientSocketError> {
         unimplemented!()
     }
+}
+
+struct ResultContainer {
+    pub instant: Instant,
+    pub result: Result<Option<Packet>, NaiaClientSocketError>,
 }

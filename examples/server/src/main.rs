@@ -4,7 +4,9 @@ extern crate log;
 use simple_logger;
 use std::net::SocketAddr;
 
-use naia_server_socket::{find_my_ip_address, Packet, ServerSocket, ServerSocketTrait};
+use naia_server_socket::{
+    find_my_ip_address, LinkConditionerConfig, Packet, ServerSocket, ServerSocketTrait,
+};
 
 const SERVER_PORT: u16 = 14191;
 const PING_MSG: &str = "ping";
@@ -19,7 +21,9 @@ async fn main() {
     let current_ip_address = find_my_ip_address().expect("can't find ip address");
     let current_socket_address = SocketAddr::new(current_ip_address, SERVER_PORT);
 
-    let mut server_socket = ServerSocket::listen(current_socket_address).await;
+    let mut server_socket = ServerSocket::listen(current_socket_address)
+        .await
+        .with_link_conditioner(&LinkConditionerConfig::poor_condition());
 
     let mut sender = server_socket.get_sender();
 
