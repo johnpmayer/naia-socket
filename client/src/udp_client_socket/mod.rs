@@ -7,9 +7,14 @@ use std::{
     rc::Rc,
 };
 
-use super::{message_sender::MessageSender, socket_event::SocketEvent};
+use naia_socket_shared::{find_available_port, find_my_ip_address, LinkConditionerConfig};
+
+use super::{
+    client_socket::ClientSocketTrait, link_conditioner::LinkConditioner,
+    message_sender::MessageSender,
+};
+
 use crate::{error::NaiaClientSocketError, Packet};
-use naia_socket_shared::{find_available_port, find_my_ip_address, Config};
 
 #[derive(Debug)]
 pub struct UdpClientSocket {
@@ -20,7 +25,7 @@ pub struct UdpClientSocket {
 }
 
 impl UdpClientSocket {
-    pub fn connect(server_socket_address: SocketAddr, _: Option<Config>) -> UdpClientSocket {
+    pub fn connect(server_socket_address: SocketAddr) -> Box<dyn ClientSocketTrait> {
         let client_ip_address = find_my_ip_address().expect("cannot find current ip address");
         let free_socket = find_available_port(&client_ip_address).expect("no available ports");
         let client_socket_address = format!("{}:{}", client_ip_address, free_socket);
@@ -35,15 +40,17 @@ impl UdpClientSocket {
 
         let message_sender = MessageSender::new(server_socket_address, socket.clone());
 
-        UdpClientSocket {
+        Box::new(UdpClientSocket {
             address: server_socket_address,
             socket,
             receive_buffer: vec![0; 1472],
             message_sender,
-        }
+        })
     }
+}
 
-    pub fn receive(&mut self) -> Result<SocketEvent, NaiaClientSocketError> {
+impl ClientSocketTrait for UdpClientSocket {
+    fn receive(&mut self) -> Result<Option<Packet>, NaiaClientSocketError> {
         let buffer: &mut [u8] = self.receive_buffer.as_mut();
         match self
             .socket
@@ -53,7 +60,7 @@ impl UdpClientSocket {
         {
             Ok((payload, address)) => {
                 if address == self.address {
-                    return Ok(SocketEvent::Packet(Packet::new(payload.to_vec())));
+                    return Ok(Some(Packet::new(payload.to_vec())));
                 } else {
                     return Err(NaiaClientSocketError::Message(
                         "Unknown sender.".to_string(),
@@ -62,7 +69,7 @@ impl UdpClientSocket {
             }
             Err(ref e) if e.kind() == ErrorKind::WouldBlock => {
                 //just didn't receive anything this time
-                return Ok(SocketEvent::None);
+                return Ok(None);
             }
             Err(e) => {
                 return Err(NaiaClientSocketError::Wrapped(Box::new(e)));
@@ -70,11 +77,14 @@ impl UdpClientSocket {
         }
     }
 
-    pub fn get_sender(&mut self) -> MessageSender {
+    fn get_sender(&mut self) -> MessageSender {
         return self.message_sender.clone();
     }
 
-    pub fn server_address(&self) -> SocketAddr {
-        return self.address;
+    fn with_link_conditioner(
+        self: Box<Self>,
+        config: &LinkConditionerConfig,
+    ) -> Box<dyn ClientSocketTrait> {
+        Box::new(LinkConditioner::new(config, self))
     }
 }

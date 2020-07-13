@@ -3,21 +3,24 @@ use log::info;
 
 use std::{cell::RefCell, collections::VecDeque, net::SocketAddr, rc::Rc};
 
-use super::{message_sender::MessageSender, socket_event::SocketEvent};
+use super::{
+    client_socket::ClientSocketTrait, link_conditioner::LinkConditioner,
+    message_sender::MessageSender,
+};
 use crate::{error::NaiaClientSocketError, Packet};
 
-use naia_socket_shared::Config;
+use naia_socket_shared::LinkConditionerConfig;
 
 #[derive(Debug)]
 pub struct WebrtcClientSocket {
     address: SocketAddr,
-    message_queue: Rc<RefCell<VecDeque<Result<SocketEvent, NaiaClientSocketError>>>>,
+    message_queue: Rc<RefCell<VecDeque<Result<Option<Packet>, NaiaClientSocketError>>>>,
     message_sender: MessageSender,
     dropped_outgoing_messages: Rc<RefCell<VecDeque<Packet>>>,
 }
 
 impl WebrtcClientSocket {
-    pub fn connect(server_socket_address: SocketAddr, _: Option<Config>) -> WebrtcClientSocket {
+    pub fn connect(server_socket_address: SocketAddr) -> Box<dyn ClientSocketTrait> {
         let message_queue = Rc::new(RefCell::new(VecDeque::new()));
         let data_channel = webrtc_initialize(server_socket_address, message_queue.clone());
 
@@ -26,15 +29,17 @@ impl WebrtcClientSocket {
         let message_sender =
             MessageSender::new(data_channel.clone(), dropped_outgoing_messages.clone());
 
-        WebrtcClientSocket {
+        Box::new(WebrtcClientSocket {
             address: server_socket_address,
             message_queue,
             message_sender,
             dropped_outgoing_messages,
-        }
+        })
     }
+}
 
-    pub fn receive(&mut self) -> Result<SocketEvent, NaiaClientSocketError> {
+impl ClientSocketTrait for WebrtcClientSocket {
+    fn receive(&mut self) -> Result<Option<Packet>, NaiaClientSocketError> {
         if !self.dropped_outgoing_messages.borrow().is_empty() {
             if let Some(dropped_packets) = {
                 let mut dom = self.dropped_outgoing_messages.borrow_mut();
@@ -53,7 +58,7 @@ impl WebrtcClientSocket {
 
         loop {
             if self.message_queue.borrow().is_empty() {
-                return Ok(SocketEvent::None);
+                return Ok(None);
             }
 
             match self
@@ -62,8 +67,8 @@ impl WebrtcClientSocket {
                 .pop_front()
                 .expect("message queue shouldn't be empty!")
             {
-                Ok(SocketEvent::Packet(packet)) => {
-                    return Ok(SocketEvent::Packet(packet));
+                Ok(Some(packet)) => {
+                    return Ok(Some(packet));
                 }
                 Ok(inner) => {
                     return Ok(inner);
@@ -75,12 +80,15 @@ impl WebrtcClientSocket {
         }
     }
 
-    pub fn get_sender(&mut self) -> MessageSender {
+    fn get_sender(&mut self) -> MessageSender {
         return self.message_sender.clone();
     }
 
-    pub fn server_address(&self) -> SocketAddr {
-        return self.address;
+    fn with_link_conditioner(
+        self: Box<Self>,
+        config: &LinkConditionerConfig,
+    ) -> Box<dyn ClientSocketTrait> {
+        Box::new(LinkConditioner::new(config, self))
     }
 }
 
@@ -123,7 +131,7 @@ pub struct IceServerConfig {
 
 fn webrtc_initialize(
     socket_address: SocketAddr,
-    msg_queue: Rc<RefCell<VecDeque<Result<SocketEvent, NaiaClientSocketError>>>>,
+    msg_queue: Rc<RefCell<VecDeque<Result<Option<Packet>, NaiaClientSocketError>>>>,
 ) -> RtcDataChannel {
     let server_url_str = format!("http://{}/new_rtc_session", socket_address);
 
@@ -157,7 +165,7 @@ fn webrtc_initialize(
                     uarray.copy_to(&mut body[..]);
                     msg_queue_clone_2
                         .borrow_mut()
-                        .push_back(Ok(SocketEvent::Packet(Packet::new(body))));
+                        .push_back(Ok(Some(Packet::new(body))));
                 }
             });
         let channel_onmsg_closure = Closure::wrap(channel_onmsg_func);

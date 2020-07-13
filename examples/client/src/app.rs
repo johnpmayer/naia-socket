@@ -1,7 +1,9 @@
 use log::info;
-use std::{net::SocketAddr, time::Duration};
+use std::net::SocketAddr;
 
-use naia_client_socket::{ClientSocket, Config, MessageSender, Packet, SocketEvent};
+use naia_client_socket::{
+    ClientSocket, ClientSocketTrait, LinkConditionerConfig, MessageSender, Packet,
+};
 
 const PING_MSG: &str = "ping";
 const PONG_MSG: &str = "pong";
@@ -20,10 +22,9 @@ cfg_if! {
 }
 
 pub struct App {
-    client_socket: ClientSocket,
+    client_socket: Box<dyn ClientSocketTrait>,
     message_sender: MessageSender,
     message_count: u8,
-    pub update_interval: Duration, // how often the app should call it's update() method
 }
 
 impl App {
@@ -40,8 +41,8 @@ impl App {
 
         let server_socket_address = SocketAddr::new(server_ip_address, SERVER_PORT);
 
-        let mut client_socket =
-            ClientSocket::connect(server_socket_address, Some(Config::default()));
+        let mut client_socket = ClientSocket::connect(server_socket_address)
+            .with_link_conditioner(&LinkConditionerConfig::good_condition());
         let mut message_sender = client_socket.get_sender();
 
         message_sender
@@ -52,7 +53,6 @@ impl App {
             client_socket,
             message_sender,
             message_count: 0,
-            update_interval: Duration::from_millis(50),
         }
     }
 
@@ -61,7 +61,7 @@ impl App {
             match self.client_socket.receive() {
                 Ok(event) => {
                     match event {
-                        SocketEvent::Packet(packet) => {
+                        Some(packet) => {
                             let message = String::from_utf8_lossy(packet.payload());
                             info!("Client recv: {}", message);
 
@@ -74,7 +74,7 @@ impl App {
                                     .expect("send error");
                             }
                         }
-                        SocketEvent::None => {
+                        None => {
                             //info!("Client non-event");
                             return;
                         }

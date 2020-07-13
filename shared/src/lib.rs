@@ -21,8 +21,18 @@ pub use find_available_port::find_available_port;
 mod find_my_ip_address;
 pub use find_my_ip_address::find_my_ip_address;
 
-mod config;
-pub use config::Config;
+mod link_conditioner_config;
+pub use link_conditioner_config::LinkConditionerConfig;
 
 mod timer;
 pub use timer::Timer;
+
+mod instant;
+pub use instant::Instant;
+
+mod time_queue;
+pub use time_queue::TimeQueue;
+
+/// Logic shared between client & server sockets related to simulating network
+/// conditions
+pub mod link_condition_logic;
