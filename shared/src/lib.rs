@@ -32,3 +32,7 @@ pub use instant::Instant;
 
 mod time_queue;
 pub use time_queue::TimeQueue;
+
+/// Logic shared between client & server sockets related to simulating network
+/// conditions
+pub mod link_condition_logic;

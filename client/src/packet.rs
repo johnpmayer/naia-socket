@@ -1,5 +1,5 @@
 /// A Packet that can be sent to the Server
-#[derive(Debug)]
+#[derive(Debug, Eq, PartialEq)]
 pub struct Packet {
     /// The raw payload of the packet
     payload: Box<[u8]>,

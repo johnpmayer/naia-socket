@@ -1,6 +1,6 @@
 use async_trait::async_trait;
 
-use naia_socket_shared::{Instant, LinkConditionerConfig, TimeQueue};
+use naia_socket_shared::{link_condition_logic, Instant, LinkConditionerConfig, TimeQueue};
 
 use super::{
     error::NaiaServerSocketError, message_sender::MessageSender, packet::Packet,
@@ -10,7 +10,7 @@ use super::{
 pub struct LinkConditioner {
     config: LinkConditionerConfig,
     inner_socket: Box<dyn ServerSocketTrait>,
-    result_queue: TimeQueue<Packet>,
+    time_queue: TimeQueue<Packet>,
 }
 
 impl LinkConditioner {
@@ -18,7 +18,7 @@ impl LinkConditioner {
         LinkConditioner {
             config: config.clone(),
             inner_socket: socket,
-            result_queue: TimeQueue::new(),
+            time_queue: TimeQueue::new(),
         }
     }
 }
@@ -47,14 +47,14 @@ impl ServerSocketTrait for LinkConditioner {
 
 impl LinkConditioner {
     fn process_packet(&mut self, packet: Packet) {
-        self.result_queue.add_item(Instant::now(), packet);
+        link_condition_logic::process_packet(&self.config, &mut self.time_queue, packet);
     }
 
     fn has_packet(&self) -> bool {
-        self.result_queue.has_item()
+        self.time_queue.has_item()
     }
 
     fn get_packet(&mut self) -> Packet {
-        self.result_queue.pop_item().unwrap()
+        self.time_queue.pop_item().unwrap()
     }
 }

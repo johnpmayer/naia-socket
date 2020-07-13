@@ -1,4 +1,4 @@
-use naia_socket_shared::LinkConditionerConfig;
+use naia_socket_shared::{link_condition_logic, LinkConditionerConfig, TimeQueue};
 
 use super::{
     client_socket::ClientSocketTrait, error::NaiaClientSocketError, message_sender::MessageSender,
@@ -8,6 +8,7 @@ use super::{
 pub struct LinkConditioner {
     config: LinkConditionerConfig,
     inner_socket: Box<dyn ClientSocketTrait>,
+    time_queue: TimeQueue<Packet>,
 }
 
 impl LinkConditioner {
@@ -15,6 +16,7 @@ impl LinkConditioner {
         LinkConditioner {
             config: config.clone(),
             inner_socket: socket,
+            time_queue: TimeQueue::new(),
         }
     }
 }
@@ -28,19 +30,19 @@ impl ClientSocketTrait for LinkConditioner {
                         break;
                     }
                     Some(packet) => {
-                        self.process_result(Ok(Some(packet)));
+                        self.process_packet(packet);
                     }
                 },
                 Err(error) => {
-                    self.process_result(Err(error));
+                    return Err(error);
                 }
             }
         }
 
-        if self.has_result() {
-            self.get_result()
+        if self.has_packet() {
+            return Ok(Some(self.get_packet()));
         } else {
-            Ok(None)
+            return Ok(None);
         }
     }
 
@@ -59,20 +61,15 @@ impl ClientSocketTrait for LinkConditioner {
 }
 
 impl LinkConditioner {
-    fn process_result(&mut self, result: Result<Option<Packet>, NaiaClientSocketError>) {
-        unimplemented!()
+    fn process_packet(&mut self, packet: Packet) {
+        link_condition_logic::process_packet(&self.config, &mut self.time_queue, packet);
     }
 
-    fn has_result(&self) -> bool {
-        unimplemented!()
+    fn has_packet(&self) -> bool {
+        self.time_queue.has_item()
     }
 
-    fn get_result(&mut self) -> Result<Option<Packet>, NaiaClientSocketError> {
-        unimplemented!()
+    fn get_packet(&mut self) -> Packet {
+        self.time_queue.pop_item().unwrap()
     }
-}
-
-struct ResultContainer {
-    pub instant: Instant,
-    pub result: Result<Option<Packet>, NaiaClientSocketError>,
 }
