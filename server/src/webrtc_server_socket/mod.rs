@@ -13,11 +13,10 @@ use webrtc_unreliable::{
 
 use futures_channel::mpsc;
 use futures_util::{pin_mut, select, FutureExt, StreamExt};
-use tokio::time::{self, Interval};
+//use tokio::time::{self, Interval};
 
-use super::{message_sender::MessageSender, socket_event::SocketEvent};
+use super::message_sender::MessageSender;
 use crate::{error::NaiaServerSocketError, Packet, ServerSocketTrait};
-use naia_socket_shared::Config;
 
 const CLIENT_CHANNEL_SIZE: usize = 8;
 
@@ -26,12 +25,12 @@ pub struct WebrtcServerSocket {
     rtc_server: RtcServer,
     to_client_sender: mpsc::Sender<Packet>,
     to_client_receiver: mpsc::Receiver<Packet>,
-    tick_timer: Interval,
+    //    tick_timer: Interval,
     receive_buffer: Vec<u8>,
 }
 
 impl WebrtcServerSocket {
-    pub async fn listen(socket_address: SocketAddr, config: Option<Config>) -> Self {
+    pub async fn listen(socket_address: SocketAddr) -> Self {
         let webrtc_listen_ip: IpAddr = socket_address.ip();
         let webrtc_listen_port =
             get_available_port(webrtc_listen_ip.to_string().as_str()).expect("no available port");
@@ -41,16 +40,11 @@ impl WebrtcServerSocket {
 
         let rtc_server = RtcServer::new(webrtc_listen_addr).await;
 
-        let tick_interval = match config {
-            Some(config) => config.tick_interval,
-            None => Config::default().tick_interval,
-        };
-
         let socket = WebrtcServerSocket {
             rtc_server,
             to_client_sender,
             to_client_receiver,
-            tick_timer: time::interval(tick_interval),
+            //            tick_timer: time::interval(tick_interval),
             receive_buffer: vec![0; 0x10000], /* Hopefully get rid of this one day.. next version
                                                * of webrtc-unreliable should make that happen */
         };
@@ -100,17 +94,17 @@ impl WebrtcServerSocket {
 
 #[async_trait]
 impl ServerSocketTrait for WebrtcServerSocket {
-    async fn receive(&mut self) -> Result<SocketEvent, NaiaServerSocketError> {
+    async fn receive(&mut self) -> Result<Packet, NaiaServerSocketError> {
         enum Next {
             FromClientMessage(Result<MessageResult, RecvError>),
             ToClientMessage(Packet),
-            PeriodicTimer,
+            //            PeriodicTimer,
         }
 
         loop {
             let next = {
-                let timer_next = self.tick_timer.tick().fuse();
-                pin_mut!(timer_next);
+                //                let timer_next = self.tick_timer.tick().fuse();
+                //                pin_mut!(timer_next);
 
                 let to_client_receiver_next = self.to_client_receiver.next().fuse();
                 pin_mut!(to_client_receiver_next);
@@ -121,18 +115,18 @@ impl ServerSocketTrait for WebrtcServerSocket {
                 pin_mut!(from_client_message_receiver_next);
 
                 select! {
-                    from_client_result = from_client_message_receiver_next => {
-                        Next::FromClientMessage(from_client_result)
-                    }
-                    to_client_message = to_client_receiver_next => {
-                        Next::ToClientMessage(
-                            to_client_message.expect("to server message receiver closed")
-                        )
-                    }
-                    _ = timer_next => {
-                        Next::PeriodicTimer
-                    }
-                }
+                                    from_client_result = from_client_message_receiver_next => {
+                                        Next::FromClientMessage(from_client_result)
+                                    }
+                                    to_client_message = to_client_receiver_next => {
+                                        Next::ToClientMessage(
+                                            to_client_message.expect("to server message receiver closed")
+                                        )
+                                    }
+                //                    _ = timer_next => {
+                //                        Next::PeriodicTimer
+                //                    }
+                                }
             };
 
             match next {
@@ -143,10 +137,7 @@ impl ServerSocketTrait for WebrtcServerSocket {
                             .iter()
                             .cloned()
                             .collect();
-                        return Ok(SocketEvent::Packet(Packet::new_raw(
-                            address,
-                            payload.into_boxed_slice(),
-                        )));
+                        return Ok(Packet::new_raw(address, payload.into_boxed_slice()));
                     }
                     Err(err) => {
                         return Err(NaiaServerSocketError::Wrapped(Box::new(err)));
@@ -165,10 +156,9 @@ impl ServerSocketTrait for WebrtcServerSocket {
                         }
                         _ => {}
                     }
-                }
-                Next::PeriodicTimer => {
-                    return Ok(SocketEvent::Tick);
-                }
+                } /*                Next::PeriodicTimer => {
+                   *                    return Ok(SocketEvent::Tick);
+                   *                } */
             }
         }
     }

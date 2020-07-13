@@ -7,9 +7,7 @@ use std::{
     rc::Rc,
 };
 
-use naia_socket_shared::{
-    find_available_port, find_my_ip_address, LinkConditionerConfig, SocketConfig,
-};
+use naia_socket_shared::{find_available_port, find_my_ip_address, LinkConditionerConfig};
 
 use super::{
     client_socket::ClientSocketTrait, link_conditioner::LinkConditioner,
@@ -27,10 +25,7 @@ pub struct UdpClientSocket {
 }
 
 impl UdpClientSocket {
-    pub fn connect(
-        server_socket_address: SocketAddr,
-        _: Option<SocketConfig>,
-    ) -> Box<dyn ClientSocketTrait> {
+    pub fn connect(server_socket_address: SocketAddr) -> Box<dyn ClientSocketTrait> {
         let client_ip_address = find_my_ip_address().expect("cannot find current ip address");
         let free_socket = find_available_port(&client_ip_address).expect("no available ports");
         let client_socket_address = format!("{}:{}", client_ip_address, free_socket);

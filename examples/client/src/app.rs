@@ -1,9 +1,7 @@
 use log::info;
 use std::{net::SocketAddr, time::Duration};
 
-use naia_client_socket::{
-    ClientSocket, ClientSocketTrait, MessageSender, Packet, SocketConfig, SocketEvent,
-};
+use naia_client_socket::{ClientSocket, ClientSocketTrait, MessageSender, Packet, SocketEvent};
 
 const PING_MSG: &str = "ping";
 const PONG_MSG: &str = "pong";
@@ -42,8 +40,7 @@ impl App {
 
         let server_socket_address = SocketAddr::new(server_ip_address, SERVER_PORT);
 
-        let mut client_socket =
-            ClientSocket::connect(server_socket_address, Some(SocketConfig::default()));
+        let mut client_socket = ClientSocket::connect(server_socket_address);
         let mut message_sender = client_socket.get_sender();
 
         message_sender

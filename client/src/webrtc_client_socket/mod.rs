@@ -9,7 +9,7 @@ use super::{
 };
 use crate::{error::NaiaClientSocketError, Packet};
 
-use naia_socket_shared::{LinkConditionerConfig, SocketConfig};
+use naia_socket_shared::LinkConditionerConfig;
 
 #[derive(Debug)]
 pub struct WebrtcClientSocket {
@@ -20,10 +20,7 @@ pub struct WebrtcClientSocket {
 }
 
 impl WebrtcClientSocket {
-    pub fn connect(
-        server_socket_address: SocketAddr,
-        _: Option<SocketConfig>,
-    ) -> WebrtcClientSocket {
+    pub fn connect(server_socket_address: SocketAddr) -> Box<dyn ClientSocketTrait> {
         let message_queue = Rc::new(RefCell::new(VecDeque::new()));
         let data_channel = webrtc_initialize(server_socket_address, message_queue.clone());
 
@@ -32,12 +29,12 @@ impl WebrtcClientSocket {
         let message_sender =
             MessageSender::new(data_channel.clone(), dropped_outgoing_messages.clone());
 
-        WebrtcClientSocket {
+        Box::new(WebrtcClientSocket {
             address: server_socket_address,
             message_queue,
             message_sender,
             dropped_outgoing_messages,
-        }
+        })
     }
 }
 

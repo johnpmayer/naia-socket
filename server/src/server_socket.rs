@@ -1,13 +1,13 @@
 use async_trait::async_trait;
 
-use super::{message_sender::MessageSender, socket_event::SocketEvent};
+use super::{message_sender::MessageSender, packet::Packet};
 use crate::error::NaiaServerSocketError;
 
 /// Defines the functionality of a Naia Server Socket
 #[async_trait]
 pub trait ServerSocketTrait {
     /// Receive a new packet from the socket, or a tick event
-    async fn receive(&mut self) -> Result<SocketEvent, NaiaServerSocketError>;
+    async fn receive(&mut self) -> Result<Packet, NaiaServerSocketError>;
     /// Gets a MessageSender you can use to send messages through the Server
     /// Socket
     fn get_sender(&mut self) -> MessageSender;
