@@ -19,9 +19,6 @@ extern crate log;
 #[macro_use]
 extern crate cfg_if;
 
-#[macro_use]
-extern crate futures_core;
-
 cfg_if! {
     if #[cfg(all(feature = "use-webrtc", not(feature = "use-udp")))]
     {

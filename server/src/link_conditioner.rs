@@ -1,13 +1,9 @@
 use async_trait::async_trait;
-use futures::future;
 use futures_util::{pin_mut, select, FutureExt};
-use std::{
-    task::{Context, Poll},
-    time::Duration,
-};
-use tokio::{future::poll_fn, time::delay_until};
+use std::time::Duration;
+use tokio::time::delay_until;
 
-use naia_socket_shared::{link_condition_logic, Instant, LinkConditionerConfig, TimeQueue};
+use naia_socket_shared::{link_condition_logic, LinkConditionerConfig, TimeQueue};
 
 use super::{
     error::NaiaServerSocketError, message_sender::MessageSender, packet::Packet,
@@ -112,13 +108,5 @@ impl ServerSocketTrait for LinkConditioner {
 impl LinkConditioner {
     fn process_packet(&mut self, packet: Packet) {
         link_condition_logic::process_packet(&self.config, &mut self.time_queue, packet);
-    }
-
-    fn has_packet(&self) -> bool {
-        self.time_queue.has_item()
-    }
-
-    fn get_packet(&mut self) -> Packet {
-        self.time_queue.pop_item().unwrap()
     }
 }

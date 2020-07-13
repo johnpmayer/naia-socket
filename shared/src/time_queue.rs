@@ -1,4 +1,4 @@
-use std::{cmp::Ordering, collections::BinaryHeap, time::Duration};
+use std::{cmp::Ordering, collections::BinaryHeap};
 
 use super::Instant;
 
