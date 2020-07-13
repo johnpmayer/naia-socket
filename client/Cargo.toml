@@ -17,7 +17,7 @@ maintenance = { status = "actively-developed" }
 
 [dependencies]
 log = "0.4"
-naia-socket-shared = { version = "0.1.1", path = "../shared" }
+naia-socket-shared = { version = "0.2.0", path = "../shared" }
 cfg-if = "0.1.10"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
