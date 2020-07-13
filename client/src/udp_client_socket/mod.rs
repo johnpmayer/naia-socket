@@ -7,9 +7,16 @@ use std::{
     rc::Rc,
 };
 
-use super::{message_sender::MessageSender, socket_event::SocketEvent, client_socket::ClientSocketTrait};
+use naia_socket_shared::{
+    find_available_port, find_my_ip_address, LinkConditionerConfig, SocketConfig,
+};
+
+use super::{
+    client_socket::ClientSocketTrait, link_conditioner::LinkConditioner,
+    message_sender::MessageSender, socket_event::SocketEvent,
+};
+
 use crate::{error::NaiaClientSocketError, Packet};
-use naia_socket_shared::{find_available_port, find_my_ip_address, Config};
 
 #[derive(Debug)]
 pub struct UdpClientSocket {
@@ -20,7 +27,10 @@ pub struct UdpClientSocket {
 }
 
 impl UdpClientSocket {
-    pub fn connect(server_socket_address: SocketAddr, _: Option<Config>) -> UdpClientSocket {
+    pub fn connect(
+        server_socket_address: SocketAddr,
+        _: Option<SocketConfig>,
+    ) -> Box<dyn ClientSocketTrait> {
         let client_ip_address = find_my_ip_address().expect("cannot find current ip address");
         let free_socket = find_available_port(&client_ip_address).expect("no available ports");
         let client_socket_address = format!("{}:{}", client_ip_address, free_socket);
@@ -35,12 +45,12 @@ impl UdpClientSocket {
 
         let message_sender = MessageSender::new(server_socket_address, socket.clone());
 
-        UdpClientSocket {
+        Box::new(UdpClientSocket {
             address: server_socket_address,
             socket,
             receive_buffer: vec![0; 1472],
             message_sender,
-        }
+        })
     }
 }
 
@@ -74,5 +84,12 @@ impl ClientSocketTrait for UdpClientSocket {
 
     fn get_sender(&mut self) -> MessageSender {
         return self.message_sender.clone();
+    }
+
+    fn with_link_conditioner(
+        self: Box<Self>,
+        config: &LinkConditionerConfig,
+    ) -> Box<dyn ClientSocketTrait> {
+        Box::new(LinkConditioner::new(config, self))
     }
 }

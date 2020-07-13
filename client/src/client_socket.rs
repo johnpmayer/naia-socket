@@ -1,6 +1,8 @@
+use naia_socket_shared::LinkConditionerConfig;
 
-use super::{message_sender::MessageSender, socket_event::SocketEvent};
-use crate::error::NaiaClientSocketError;
+use super::{
+    error::NaiaClientSocketError, message_sender::MessageSender, socket_event::SocketEvent,
+};
 
 /// Defines the functionality of a Naia Client Socket
 pub trait ClientSocketTrait {
@@ -9,6 +11,11 @@ pub trait ClientSocketTrait {
     /// Gets a MessageSender you can use to send messages through the Server
     /// Socket
     fn get_sender(&mut self) -> MessageSender;
+    /// Wraps the current socket in a LinkConditioner
+    fn with_link_conditioner(
+        self: Box<Self>,
+        config: &LinkConditionerConfig,
+    ) -> Box<dyn ClientSocketTrait>;
 }
 
 cfg_if! {

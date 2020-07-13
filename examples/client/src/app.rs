@@ -1,7 +1,9 @@
 use log::info;
 use std::{net::SocketAddr, time::Duration};
 
-use naia_client_socket::{ClientSocket, Config, MessageSender, Packet, SocketEvent};
+use naia_client_socket::{
+    ClientSocket, ClientSocketTrait, MessageSender, Packet, SocketConfig, SocketEvent,
+};
 
 const PING_MSG: &str = "ping";
 const PONG_MSG: &str = "pong";
@@ -20,7 +22,7 @@ cfg_if! {
 }
 
 pub struct App {
-    client_socket: ClientSocket,
+    client_socket: Box<dyn ClientSocketTrait>,
     message_sender: MessageSender,
     message_count: u8,
     pub update_interval: Duration, // how often the app should call it's update() method
@@ -41,7 +43,7 @@ impl App {
         let server_socket_address = SocketAddr::new(server_ip_address, SERVER_PORT);
 
         let mut client_socket =
-            ClientSocket::connect(server_socket_address, Some(Config::default()));
+            ClientSocket::connect(server_socket_address, Some(SocketConfig::default()));
         let mut message_sender = client_socket.get_sender();
 
         message_sender

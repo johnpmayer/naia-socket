@@ -21,8 +21,13 @@ pub use find_available_port::find_available_port;
 mod find_my_ip_address;
 pub use find_my_ip_address::find_my_ip_address;
 
-mod config;
-pub use config::Config;
+mod socket_config;
+pub use socket_config::SocketConfig;
+
+mod link_conditioner_config;
+pub use link_conditioner_config::LinkConditionerConfig;
 
 mod timer;
 pub use timer::Timer;
+
+

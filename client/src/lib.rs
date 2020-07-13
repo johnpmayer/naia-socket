@@ -33,10 +33,11 @@ mod error;
 mod message_sender;
 mod packet;
 mod socket_event;
+mod link_conditioner;
 
 pub use client_socket::{ClientSocket, ClientSocketTrait};
 pub use error::NaiaClientSocketError;
 pub use message_sender::MessageSender;
-pub use naia_socket_shared::{find_my_ip_address, Config};
+pub use naia_socket_shared::{find_my_ip_address, SocketConfig};
 pub use packet::Packet;
 pub use socket_event::SocketEvent;

@@ -3,10 +3,13 @@ use log::info;
 
 use std::{cell::RefCell, collections::VecDeque, net::SocketAddr, rc::Rc};
 
-use super::{message_sender::MessageSender, socket_event::SocketEvent, client_socket::ClientSocketTrait};
+use super::{
+    client_socket::ClientSocketTrait, link_conditioner::LinkConditioner,
+    message_sender::MessageSender, socket_event::SocketEvent,
+};
 use crate::{error::NaiaClientSocketError, Packet};
 
-use naia_socket_shared::Config;
+use naia_socket_shared::{LinkConditionerConfig, SocketConfig};
 
 #[derive(Debug)]
 pub struct WebrtcClientSocket {
@@ -17,7 +20,10 @@ pub struct WebrtcClientSocket {
 }
 
 impl WebrtcClientSocket {
-    pub fn connect(server_socket_address: SocketAddr, _: Option<Config>) -> WebrtcClientSocket {
+    pub fn connect(
+        server_socket_address: SocketAddr,
+        _: Option<SocketConfig>,
+    ) -> WebrtcClientSocket {
         let message_queue = Rc::new(RefCell::new(VecDeque::new()));
         let data_channel = webrtc_initialize(server_socket_address, message_queue.clone());
 
@@ -79,6 +85,13 @@ impl ClientSocketTrait for WebrtcClientSocket {
 
     fn get_sender(&mut self) -> MessageSender {
         return self.message_sender.clone();
+    }
+
+    fn with_link_conditioner(
+        self: Box<Self>,
+        config: &LinkConditionerConfig,
+    ) -> Box<dyn ClientSocketTrait> {
+        Box::new(LinkConditioner::new(config, self))
     }
 }
 
