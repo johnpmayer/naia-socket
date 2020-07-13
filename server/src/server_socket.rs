@@ -7,7 +7,7 @@ use crate::error::NaiaServerSocketError;
 
 /// Defines the functionality of a Naia Server Socket
 #[async_trait]
-pub trait ServerSocketTrait: Send {
+pub trait ServerSocketTrait: Send + Sync {
     /// Receive a new packet from the socket, or a tick event
     async fn receive(&mut self) -> Result<Packet, NaiaServerSocketError>;
     /// Gets a MessageSender you can use to send messages through the Server

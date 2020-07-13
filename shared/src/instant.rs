@@ -29,6 +29,14 @@ cfg_if! {
                 return Duration::new(seconds, nanos);
             }
 
+            /// Returns time until the Instant occurs
+            pub fn until(&self) -> Duration {
+                let inner_duration = self.inner - Date::now();
+                let seconds: u64 = (inner_duration as u64) / 1000;
+                let nanos: u32 = ((inner_duration as u32) % 1000) * 1000000;
+                return Duration::new(seconds, nanos);
+            }
+
             /// Adds a given number of milliseconds to the Instant
             pub fn add_millis(&mut self, millis: u32) {
                 let millis_f64: f64 = millis.into();
@@ -73,9 +81,19 @@ cfg_if! {
                 self.inner.elapsed()
             }
 
+            /// Returns time until the Instant occurs
+            pub fn until(&self) -> Duration {
+                return self.inner.duration_since(std::time::Instant::now());
+            }
+
             /// Adds a given number of milliseconds to the Instant
             pub fn add_millis(&mut self, millis: u32) {
                 self.inner += Duration::from_millis(millis.into());
+            }
+
+            /// Returns inner Instant implementation
+            pub fn get_inner(&self) -> std::time::Instant {
+                return self.inner.clone();
             }
         }
     }

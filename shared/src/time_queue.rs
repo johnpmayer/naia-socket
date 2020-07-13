@@ -1,4 +1,4 @@
-use std::{cmp::Ordering, collections::BinaryHeap};
+use std::{cmp::Ordering, collections::BinaryHeap, time::Duration};
 
 use super::Instant;
 
@@ -42,10 +42,20 @@ impl<T: Eq + PartialEq> TimeQueue<T> {
         }
         return None;
     }
+
+    /// Peeks at the top level item container on the queue
+    pub fn peek_entry(&self) -> Option<&ItemContainer<T>> {
+        return self.queue.peek();
+    }
+
+    /// Returns the length of the underlying queue
+    pub fn len(&self) -> usize {
+        return self.queue.len();
+    }
 }
 
 #[derive(Debug, Eq, PartialEq)]
-struct ItemContainer<T: Eq + PartialEq> {
+pub struct ItemContainer<T: Eq + PartialEq> {
     pub instant: Instant,
     pub item: T,
 }

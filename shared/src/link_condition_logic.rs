@@ -15,11 +15,12 @@ pub fn process_packet<T: Eq>(
     let mut rng = rand::thread_rng();
     if rng.gen_range(0.0, 1.0) <= config.incoming_loss {
         // drop the packet
-        println!("DROPPED PACKET");
+        println!("link conditioner: packet lost");
         return;
     }
     if rng.gen_range(0.0, 1.0) <= config.incoming_corruption {
         //TODO: corrupt the packet
+        println!("link conditioner: packet corrupted");
         return;
     }
     let mut latency: u32 = config.incoming_latency;

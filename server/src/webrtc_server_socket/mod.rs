@@ -15,6 +15,8 @@ use futures_channel::mpsc;
 use futures_util::{pin_mut, select, FutureExt, StreamExt};
 //use tokio::time::{self, Interval};
 
+use naia_socket_shared::LinkConditionerConfig;
+
 use super::{link_conditioner::LinkConditioner, message_sender::MessageSender};
 use crate::{error::NaiaServerSocketError, Packet, ServerSocketTrait};
 
