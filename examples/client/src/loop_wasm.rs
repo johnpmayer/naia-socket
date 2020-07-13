@@ -22,7 +22,6 @@ cfg_if! {
                     .expect("should register `requestAnimationFrame` OK");
             }
 
-            let interval_duration = app.update_interval.as_millis() as i32;
             let mut rc = Rc::new(app);
             let f = Rc::new(RefCell::new(None));
             let g = f.clone();
@@ -31,12 +30,12 @@ cfg_if! {
                 if let Some(the_app) = Rc::get_mut(&mut rc) {
                     the_app.update();
                 };
-                set_timeout(f.borrow().as_ref().unwrap(), interval_duration);
+                set_timeout(f.borrow().as_ref().unwrap(), 1);
             };
 
             *g.borrow_mut() = Some(Closure::wrap(Box::new(c) as Box<dyn FnMut()>));
 
-            set_timeout(g.borrow().as_ref().unwrap(), interval_duration);
+            set_timeout(g.borrow().as_ref().unwrap(), 1);
         }
     } else {}
 }

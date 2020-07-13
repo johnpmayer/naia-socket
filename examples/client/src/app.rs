@@ -1,5 +1,5 @@
 use log::info;
-use std::{net::SocketAddr, time::Duration};
+use std::net::SocketAddr;
 
 use naia_client_socket::{
     ClientSocket, ClientSocketTrait, LinkConditionerConfig, MessageSender, Packet,
@@ -25,7 +25,6 @@ pub struct App {
     client_socket: Box<dyn ClientSocketTrait>,
     message_sender: MessageSender,
     message_count: u8,
-    pub update_interval: Duration, // how often the app should call it's update() method
 }
 
 impl App {
@@ -43,7 +42,7 @@ impl App {
         let server_socket_address = SocketAddr::new(server_ip_address, SERVER_PORT);
 
         let mut client_socket = ClientSocket::connect(server_socket_address)
-            .with_link_conditioner(&LinkConditionerConfig::poor_condition());
+            .with_link_conditioner(&LinkConditionerConfig::good_condition());
         let mut message_sender = client_socket.get_sender();
 
         message_sender
@@ -54,7 +53,6 @@ impl App {
             client_socket,
             message_sender,
             message_count: 0,
-            update_interval: Duration::from_millis(50),
         }
     }
 

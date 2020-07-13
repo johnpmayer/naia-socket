@@ -21,7 +21,7 @@ async fn main() {
 
     let mut server_socket = ServerSocket::listen(current_socket_address)
         .await
-        .with_link_conditioner(&LinkConditionerConfig::poor_condition());
+        .with_link_conditioner(&LinkConditionerConfig::good_condition());
 
     let mut sender = server_socket.get_sender();
 
