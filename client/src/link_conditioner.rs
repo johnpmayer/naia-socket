@@ -5,6 +5,7 @@ use super::{
     packet::Packet,
 };
 
+#[derive(Debug)]
 pub struct LinkConditioner {
     config: LinkConditionerConfig,
     inner_socket: Box<dyn ClientSocketTrait>,
