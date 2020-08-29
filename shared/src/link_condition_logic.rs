@@ -1,3 +1,6 @@
+extern crate log;
+use log::info;
+
 use super::{
     instant::Instant, link_conditioner_config::LinkConditionerConfig, time_queue::TimeQueue,
 };
@@ -12,12 +15,12 @@ pub fn process_packet<T: Eq>(
 ) {
     if gen_range_f32(0.0, 1.0) <= config.incoming_loss {
         // drop the packet
-        println!("link conditioner: packet lost");
+        info!("link conditioner: packet lost");
         return;
     }
     if gen_range_f32(0.0, 1.0) <= config.incoming_corruption {
         //TODO: corrupt the packet
-        println!("link conditioner: packet corrupted");
+        info!("link conditioner: packet corrupted");
         return;
     }
     let mut latency: u32 = config.incoming_latency;

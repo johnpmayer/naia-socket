@@ -50,7 +50,7 @@ impl ClientSocketTrait for WebrtcClientSocket {
                     self.message_sender
                         .send(dropped_packet)
                         .unwrap_or_else(|err| {
-                            println!("Can't send dropped packet. Original Error: {:?}", err)
+                            info!("Can't send dropped packet. Original Error: {:?}", err)
                         });
                 }
             }
@@ -196,7 +196,7 @@ fn webrtc_initialize(
             request
                 .open("POST", &server_url_msg_clone)
                 .unwrap_or_else(|err| {
-                    println!(
+                    info!(
                         "WebSys, can't POST to server url. Original Error: {:?}",
                         err
                     )
@@ -279,7 +279,7 @@ fn webrtc_initialize(
                     peer_clone_2.local_description().unwrap().sdp().as_str(),
                 ))
                 .unwrap_or_else(|err| {
-                    println!("WebSys, can't sent request str. Original Error: {:?}", err)
+                    info!("WebSys, can't sent request str. Original Error: {:?}", err)
                 });
         });
         let peer_desc_callback = Closure::wrap(peer_desc_func);
