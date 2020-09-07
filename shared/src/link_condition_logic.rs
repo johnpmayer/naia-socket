@@ -21,10 +21,12 @@ pub fn process_packet<T: Eq>(
         return;
     }
     let mut latency: u32 = config.incoming_latency;
-    if gen_bool() {
-        latency += gen_range_u32(0, config.incoming_jitter);
-    } else {
-        latency -= gen_range_u32(0, config.incoming_jitter);
+    if config.incoming_jitter > 0 {
+        if gen_bool() {
+            latency += gen_range_u32(0, config.incoming_jitter);
+        } else {
+            latency -= gen_range_u32(0, config.incoming_jitter);
+        }
     }
     let mut packet_timestamp = Instant::now();
     packet_timestamp.add_millis(latency);
