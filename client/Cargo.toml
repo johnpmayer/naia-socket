@@ -20,6 +20,9 @@ log = "0.4"
 naia-socket-shared = { version = "0.2.1", path = "../shared" }
 cfg-if = "0.1.10"
 
+[target.'cfg(not(target_arch = "wasm32"))'.features]
+multithread = [ "naia-socket-shared/multithread" ]
+
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 url = "2.1.1"
 wasm-bindgen = { version = "0.2.45", features = [ "serde-serialize" ] }

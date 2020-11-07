@@ -13,6 +13,9 @@ edition = "2018"
 [badges]
 maintenance = { status = "actively-developed" }
 
+[features]
+multithread = [ ]
+
 [dependencies]
 log = "0.4"
 cfg-if = "0.1.10"
