@@ -21,7 +21,6 @@ features = [ "use-webrtc" ]
 [features]
 use-udp = [ ]
 use-webrtc = [ "webrtc-unreliable", "hyper" ]
-multithread = [ "naia-socket-shared/multithread" ]
 
 [dependencies]
 naia-socket-shared = { version = "0.2.1", path = "../shared" }

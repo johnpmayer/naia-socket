@@ -1,13 +1,11 @@
 extern crate log;
 
 use std::{
-    cell::RefCell,
     io::ErrorKind,
     net::{SocketAddr, UdpSocket},
-    rc::Rc,
 };
 
-use naia_socket_shared::{find_available_port, find_my_ip_address, LinkConditionerConfig};
+use naia_socket_shared::{find_available_port, find_my_ip_address, LinkConditionerConfig, Ref};
 
 use super::{
     client_socket::ClientSocketTrait, link_conditioner::LinkConditioner,
@@ -19,7 +17,7 @@ use crate::{error::NaiaClientSocketError, Packet};
 #[derive(Debug)]
 pub struct UdpClientSocket {
     address: SocketAddr,
-    socket: Rc<RefCell<UdpSocket>>,
+    socket: Ref<UdpSocket>,
     receive_buffer: Vec<u8>,
     message_sender: MessageSender,
 }
@@ -30,9 +28,7 @@ impl UdpClientSocket {
         let free_socket = find_available_port(&client_ip_address).expect("no available ports");
         let client_socket_address = format!("{}:{}", client_ip_address, free_socket);
 
-        let socket = Rc::new(RefCell::new(
-            UdpSocket::bind(client_socket_address).unwrap(),
-        ));
+        let socket = Ref::new(UdpSocket::bind(client_socket_address).unwrap());
         socket
             .borrow()
             .set_nonblocking(true)

@@ -15,13 +15,13 @@ edition = "2018"
 [badges]
 maintenance = { status = "actively-developed" }
 
+[features]
+multithread = [ "naia-socket-shared/multithread" ]
+
 [dependencies]
 log = "0.4"
 naia-socket-shared = { version = "0.2.1", path = "../shared" }
 cfg-if = "0.1.10"
-
-[target.'cfg(not(target_arch = "wasm32"))'.features]
-multithread = [ "naia-socket-shared/multithread" ]
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 url = "2.1.1"

@@ -5,6 +5,7 @@ cfg_if! {
             sync::{Arc, Mutex, MutexGuard},
         };
 
+        #[derive(Debug)]
         pub struct Guard<'a, T> {
             inner: MutexGuard<'a, T>,
         }
@@ -24,18 +25,29 @@ cfg_if! {
         }
 
         impl<T> Ref<T> {
-            fn new(value: T) -> Self {
+            /// Creates a new 'Ref' containing 'value'
+            pub fn new(value: T) -> Self {
                 Ref {
                     inner: Arc::new(Mutex::new(value)),
                 }
             }
 
-            fn borrow(&self) -> Guard<T> {
+            /// Immutably borrows the wrapped value
+            pub fn borrow(&self) -> Guard<T> {
                 Guard {
                     inner: self.inner.lock().unwrap(),
                 }
             }
         }
+
+        impl<T> Clone for Ref<T> {
+            fn clone(&self) -> Self {
+                Ref {
+                    inner: self.inner.clone(),
+                }
+            }
+        }
+
     } else {
         use std::{
             cell::{Ref as StdRef, RefCell},
@@ -43,6 +55,7 @@ cfg_if! {
             rc::Rc,
         };
 
+        #[derive(Debug)]
         pub struct Guard<'a, T> {
             inner: StdRef<'a, T>,
         }
@@ -63,15 +76,25 @@ cfg_if! {
         }
 
         impl<T> Ref<T> {
-            fn new(value: T) -> Self {
+            /// Creates a new 'Ref' containing 'value'
+            pub fn new(value: T) -> Self {
                 Ref {
                     inner: Rc::new(RefCell::new(value)),
                 }
             }
 
-            fn borrow(&self) -> Guard<T> {
+            /// Immutably borrows the wrapped value
+            pub fn borrow(&self) -> Guard<T> {
                 Guard {
                     inner: self.inner.borrow(),
+                }
+            }
+        }
+
+        impl<T> Clone for Ref<T> {
+            fn clone(&self) -> Self {
+                Ref {
+                    inner: self.inner.clone(),
                 }
             }
         }

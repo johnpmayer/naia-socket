@@ -1,10 +1,12 @@
-use std::{cell::RefCell, error::Error, rc::Rc};
+use std::error::Error;
 
 use crate::Packet;
 
 cfg_if! {
     if #[cfg(target_arch = "wasm32")] {
         use std::collections::VecDeque;
+        use std::{cell::RefCell, rc::Rc};
+
         use web_sys::RtcDataChannel;
 
         /// Handles sending messages to the Server for a given Client Socket
@@ -39,17 +41,19 @@ cfg_if! {
             net::{SocketAddr, UdpSocket},
         };
 
+        use naia_socket_shared::Ref;
+
         /// Handles sending messages to the Server for a given Client Socket
         #[derive(Clone, Debug)]
         pub struct MessageSender {
             address: SocketAddr,
-            socket: Rc<RefCell<UdpSocket>>,
+            socket: Ref<UdpSocket>,
         }
 
         impl MessageSender {
             /// Create a new MessageSender, if supplied with the Server's address & a reference back to
             /// the parent Socket
-            pub fn new(address: SocketAddr, socket: Rc<RefCell<UdpSocket>>) -> MessageSender {
+            pub fn new(address: SocketAddr, socket: Ref<UdpSocket>) -> MessageSender {
                 MessageSender {
                     address,
                     socket,
