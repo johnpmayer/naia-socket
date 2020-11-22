@@ -46,7 +46,7 @@ impl WebrtcServerSocket {
             to_client_receiver,
         };
 
-        start_session_server(socket_address, &socket.rtc_server.session_endpoint());
+        start_session_server(socket_address, socket.rtc_server.session_endpoint());
 
         Box::new(socket)
     }

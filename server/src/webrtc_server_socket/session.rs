@@ -20,54 +20,37 @@ use log::info;
 
 use webrtc_unreliable::SessionEndpoint;
 
-pub fn start_session_server(socket_address: SocketAddr, session_endpoint: &SessionEndpoint) {
-    //        let make_svc = make_service_fn(move |addr_stream: &AddrStream| {
-    //            let session_endpoint = session_endpoint.clone();
-    //            let remote_addr = addr_stream.remote_addr();
-    //            async move {
-    //                Ok::<_, HyperError>(service_fn(move |req| {
-    //                    let mut session_endpoint = session_endpoint.clone();
-    //                    async move {
-    //                        if req.uri().path() == "/new_rtc_session" &&
-    // req.method() == Method::POST {
-    // info!("WebRTC session request from {}", remote_addr);
-    //     match session_endpoint.http_session_request(req.into_body()).await {
-    //                                    Ok(mut resp) => {
-    //                                        resp.headers_mut().insert(
-    //
-    // header::ACCESS_CONTROL_ALLOW_ORIGIN,
-    // HeaderValue::from_static("*"),                                        );
-    //                                        Ok(resp.map(Body::from))
-    //                                    }
-    //                                    Err(err) => Response::builder()
-    //                                        .status(StatusCode::BAD_REQUEST)
-    //                                        .body(Body::from(format!("error: {}",
-    //     err))),                            }
-    //                        } else {
-    //                            Response::builder()
-    //                                .status(StatusCode::NOT_FOUND)
-    //                                .body(Body::from("not found"))
-    //                        }
-    //                    }
-    //                }))
-    //            }
-    //        });
-
-    smol::block_on(async {
+pub fn start_session_server(socket_address: SocketAddr, session_endpoint: SessionEndpoint) {
+    smol::spawn(async move {
         listen(
-            session_endpoint,
+            session_endpoint.clone(),
             Async::<TcpListener>::bind(socket_address).unwrap(),
         )
         .await;
-    });
+    })
+    .detach();
 }
 
-const RESPONSE_BAD: &[u8] = br#"
-HTTP/1.1 404 NOT FOUND
-Content-Type: text/html
-Content-Length: 0
-Access-Control-Allow-Origin: *
-"#;
+/// Listens for incoming connections and serves them.
+async fn listen(session_endpoint: SessionEndpoint, listener: Async<TcpListener>) {
+    info!(
+        "Session initiator listening on http://{}",
+        listener.get_ref().local_addr().unwrap()
+    );
+
+    loop {
+        // Accept the next connection.
+        let (response_stream, _) = listener.accept().await.unwrap();
+
+        let session_endpoint_clone = session_endpoint.clone();
+
+        // Spawn a background task serving this connection.
+        smol::spawn(async move {
+            serve(session_endpoint_clone, Arc::new(response_stream)).await;
+        })
+        .detach();
+    }
+}
 
 /// Reads a request from the client and sends it a response.
 async fn serve(mut session_endpoint: SessionEndpoint, mut stream: Arc<Async<TcpStream>>) {
@@ -128,26 +111,12 @@ async fn serve(mut session_endpoint: SessionEndpoint, mut stream: Arc<Async<TcpS
     stream.close().await.unwrap();
 }
 
-/// Listens for incoming connections and serves them.
-async fn listen(session_endpoint: &SessionEndpoint, listener: Async<TcpListener>) {
-    info!(
-        "Listening on http://{}",
-        listener.get_ref().local_addr().unwrap()
-    );
-
-    loop {
-        // Accept the next connection.
-        let (response_stream, client_addr) = listener.accept().await.unwrap();
-
-        let session_endpoint_clone = session_endpoint.clone();
-
-        // Spawn a background task serving this connection.
-        smol::spawn(async move {
-            serve(session_endpoint_clone, Arc::new(response_stream)).await;
-        })
-        .detach();
-    }
-}
+const RESPONSE_BAD: &[u8] = br#"
+HTTP/1.1 404 NOT FOUND
+Content-Type: text/html
+Content-Length: 0
+Access-Control-Allow-Origin: *
+"#;
 
 struct RequestBuffer<'a, R: AsyncBufRead + Unpin> {
     buffer: &'a mut Lines<R>,
@@ -173,25 +142,22 @@ impl<'a, R: AsyncBufRead + Unpin> Stream for RequestBuffer<'a, R> {
     fn poll_next(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
         if self.add_newline {
             self.add_newline = false;
-            info!("add_newl");
             return Poll::Ready(Some(Ok(String::from(NEWLINE_STR))));
         } else {
-            info!("add_some");
             unsafe {
                 loop {
                     let mut_ref = Pin::new_unchecked(&mut self.buffer);
                     match Stream::poll_next(mut_ref, cx) {
                         Poll::Ready(Some(item)) => {
-                            info!("1");
                             self.add_newline = true;
                             return Poll::Ready(Some(item));
                         }
                         Poll::Ready(None) => {
-                            info!("2");
                             return Poll::Ready(None);
                         }
                         Poll::Pending => {
-                            info!("3");
+                            // TODO: This could be catastrophic.. I don't understand futures very
+                            // well!
                             return Poll::Ready(None);
                         }
                     }
