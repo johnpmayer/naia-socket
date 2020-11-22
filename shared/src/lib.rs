@@ -36,3 +36,6 @@ pub use time_queue::TimeQueue;
 /// Logic shared between client & server sockets related to simulating network
 /// conditions
 pub mod link_condition_logic;
+
+/// Cross-platform random number generation utility functions
+pub mod random;
