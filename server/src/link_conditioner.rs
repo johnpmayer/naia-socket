@@ -1,7 +1,7 @@
+use async_io::Timer;
 use async_trait::async_trait;
 use futures_util::{pin_mut, select, FutureExt};
 use std::time::Duration;
-use tokio::time::delay_until;
 
 use naia_socket_shared::{link_condition_logic, LinkConditionerConfig, TimeQueue};
 
@@ -29,8 +29,6 @@ impl LinkConditioner {
 #[async_trait]
 impl ServerSocketTrait for LinkConditioner {
     async fn receive(&mut self) -> Result<Packet, NaiaServerSocketError> {
-        //let result = self.inner_socket.receive().await;
-
         enum Next {
             Event(Result<Packet, NaiaServerSocketError>),
             BufferedEvent,
@@ -48,12 +46,12 @@ impl ServerSocketTrait for LinkConditioner {
                 let buffered_next = {
                     match queue_duration {
                         Some(instant) => {
-                            delay_until(tokio::time::Instant::from_std(instant)).fuse()
+                            Timer::at(instant).fuse()
                         }
-                        None => delay_until(tokio::time::Instant::from_std(
+                        None => Timer::at(
                             std::time::Instant::now()
                                 + Duration::from_secs_f64(60.0 * 60.0 * 24.0 * 365.0), // delay for a year because I couldn't figure out how to get a never-completing future in here
-                        ))
+                        )
                         .fuse(),
                     }
                 };

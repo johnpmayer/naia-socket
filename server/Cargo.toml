@@ -20,18 +20,18 @@ features = [ "use-webrtc" ]
 
 [features]
 use-udp = [ ]
-use-webrtc = [ "webrtc-unreliable", "hyper" ]
+use-webrtc = [ "webrtc-unreliable", "smol", "async-dup", "http", "futures-core" ]
 
 [dependencies]
 naia-socket-shared = { version = "0.2.1", path = "../shared" }
 log = "0.4"
 cfg-if = "0.1.10"
+async-io = { version = "1.1" }
 async-trait = "0.1.36"
-tokio = { version = "0.2", features = ["macros", "udp", "time", "stream"] }
 futures-channel = { version = "0.3", features = ["sink"] }
-futures = "0.3.5"
-futures-core = { version = "0.3" }
+futures-core = { version = "0.3", optional = true }
 futures-util = { version = "0.3", features = ["sink"] }
-webrtc-unreliable = { version = "0.4.1", optional = true }
-hyper = { version = "0.13", features = ["stream"], optional = true }
-
+webrtc-unreliable = { version = "0.5.0", optional = true }
+smol = { version = "1.2.4", optional = true }
+async-dup = { version = "1.2.2", optional = true }
+http = { version = "0.2", optional = true }
