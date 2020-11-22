@@ -1,8 +1,11 @@
+use async_io::Async;
 use async_trait::async_trait;
 use futures_channel::mpsc;
 use futures_util::{pin_mut, select, FutureExt, StreamExt};
-use std::{io::Error as IoError, net::SocketAddr};
-use tokio::net::UdpSocket;
+use std::{
+    io::Error as IoError,
+    net::{SocketAddr, UdpSocket},
+};
 
 use naia_socket_shared::LinkConditionerConfig;
 
@@ -14,16 +17,15 @@ const CLIENT_CHANNEL_SIZE: usize = 8;
 
 #[derive(Debug)]
 pub struct UdpServerSocket {
-    socket: UdpSocket,
+    socket: Async<UdpSocket>,
     to_client_sender: mpsc::Sender<Packet>,
     to_client_receiver: mpsc::Receiver<Packet>,
-    //    tick_timer: Interval,
     receive_buffer: Vec<u8>,
 }
 
 impl UdpServerSocket {
     pub async fn listen(socket_address: SocketAddr) -> Box<dyn ServerSocketTrait> {
-        let socket = UdpSocket::bind(socket_address).await.unwrap();
+        let socket = Async::new(UdpSocket::bind(&socket_address).unwrap()).unwrap();
 
         let (to_client_sender, to_client_receiver) = mpsc::channel(CLIENT_CHANNEL_SIZE);
 
@@ -31,7 +33,6 @@ impl UdpServerSocket {
             socket,
             to_client_sender,
             to_client_receiver,
-            //            tick_timer: time::interval(tick_interval),
             receive_buffer: vec![0; 0x10000], /* Hopefully get rid of this one day.. next version
                                                * of webrtc-unreliable should make that happen */
         })
@@ -44,14 +45,10 @@ impl ServerSocketTrait for UdpServerSocket {
         enum Next {
             FromClientMessage(Result<(usize, SocketAddr), IoError>),
             ToClientMessage(Packet),
-            //            PeriodicTimer,
         }
 
         loop {
             let next = {
-                //                let timer_next = self.tick_timer.tick().fuse();
-                //                pin_mut!(timer_next);
-
                 let to_client_receiver_next = self.to_client_receiver.next().fuse();
                 pin_mut!(to_client_receiver_next);
 
@@ -61,18 +58,15 @@ impl ServerSocketTrait for UdpServerSocket {
                 pin_mut!(from_client_message_receiver_next);
 
                 select! {
-                                    from_client_result = from_client_message_receiver_next => {
-                                        Next::FromClientMessage(from_client_result)
-                                    }
-                                    to_client_message = to_client_receiver_next => {
-                                        Next::ToClientMessage(
-                                            to_client_message.expect("to server message receiver closed")
-                                        )
-                                    }
-                //                    _ = timer_next => {
-                //                        Next::PeriodicTimer
-                //                    }
-                                }
+                    from_client_result = from_client_message_receiver_next => {
+                        Next::FromClientMessage(from_client_result)
+                    }
+                    to_client_message = to_client_receiver_next => {
+                        Next::ToClientMessage(
+                            to_client_message.expect("to server message receiver closed")
+                        )
+                    }
+                }
             };
 
             match next {
@@ -91,15 +85,13 @@ impl ServerSocketTrait for UdpServerSocket {
                 Next::ToClientMessage(packet) => {
                     let address = packet.address();
 
-                    match self.socket.send_to(packet.payload(), &address).await {
+                    match self.socket.send_to(packet.payload(), address).await {
                         Err(_) => {
                             return Err(NaiaServerSocketError::SendError(address));
                         }
                         _ => {}
                     }
-                } /*                Next::PeriodicTimer => {
-                   *                    return Ok(SocketEvent::Tick);
-                   *                } */
+                }
             }
         }
     }

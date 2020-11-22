@@ -1,3 +1,16 @@
+use std::{
+    future::Future,
+    io::Error as IoError,
+    net::{IpAddr, SocketAddr, TcpListener},
+    panic::catch_unwind,
+    thread,
+};
+
+use async_executor::{Executor, Task};
+use async_io::block_on;
+use futures_lite::future;
+use once_cell::sync::Lazy;
+
 use async_trait::async_trait;
 use hyper::{
     header::{self, HeaderValue},
@@ -6,14 +19,12 @@ use hyper::{
     Body, Error as HyperError, Method, Response, Server, StatusCode,
 };
 use log::info;
-use std::net::{IpAddr, SocketAddr, TcpListener};
 use webrtc_unreliable::{
-    MessageResult, MessageType, RecvError, SendError, Server as InnerRtcServer, SessionEndpoint,
+    MessageResult, MessageType, SendError, Server as InnerRtcServer, SessionEndpoint,
 };
 
 use futures_channel::mpsc;
 use futures_util::{pin_mut, select, FutureExt, StreamExt};
-//use tokio::time::{self, Interval};
 
 use naia_socket_shared::LinkConditionerConfig;
 
@@ -27,8 +38,6 @@ pub struct WebrtcServerSocket {
     rtc_server: RtcServer,
     to_client_sender: mpsc::Sender<Packet>,
     to_client_receiver: mpsc::Receiver<Packet>,
-    //    tick_timer: Interval,
-    receive_buffer: Vec<u8>,
 }
 
 impl WebrtcServerSocket {
@@ -46,9 +55,6 @@ impl WebrtcServerSocket {
             rtc_server,
             to_client_sender,
             to_client_receiver,
-            //            tick_timer: time::interval(tick_interval),
-            receive_buffer: vec![0; 0x10000], /* Hopefully get rid of this one day.. next version
-                                               * of webrtc-unreliable should make that happen */
         };
 
         let session_endpoint = socket.rtc_server.session_endpoint();
@@ -83,12 +89,8 @@ impl WebrtcServerSocket {
             }
         });
 
-        tokio::spawn(async move {
-            Server::bind(&socket_address)
-                .serve(make_svc)
-                .await
-                .expect("HTTP session server has died");
-        });
+        //gotta spawn this into a separate thread w/o tokio
+        Server::bind(&socket_address).serve(make_svc).await;
 
         Box::new(socket)
     }
@@ -98,48 +100,42 @@ impl WebrtcServerSocket {
 impl ServerSocketTrait for WebrtcServerSocket {
     async fn receive(&mut self) -> Result<Packet, NaiaServerSocketError> {
         enum Next {
-            FromClientMessage(Result<MessageResult, RecvError>),
+            FromClientMessage(Result<Packet, IoError>),
             ToClientMessage(Packet),
-            //            PeriodicTimer,
         }
 
         loop {
             let next = {
-                //                let timer_next = self.tick_timer.tick().fuse();
-                //                pin_mut!(timer_next);
-
                 let to_client_receiver_next = self.to_client_receiver.next().fuse();
                 pin_mut!(to_client_receiver_next);
 
-                let receive_buffer = &mut self.receive_buffer;
                 let rtc_server = &mut self.rtc_server;
-                let from_client_message_receiver_next = rtc_server.recv(receive_buffer).fuse();
+                let from_client_message_receiver_next = rtc_server.recv().fuse();
                 pin_mut!(from_client_message_receiver_next);
 
                 select! {
-                                    from_client_result = from_client_message_receiver_next => {
-                                        Next::FromClientMessage(from_client_result)
-                                    }
-                                    to_client_message = to_client_receiver_next => {
-                                        Next::ToClientMessage(
-                                            to_client_message.expect("to server message receiver closed")
-                                        )
-                                    }
-                //                    _ = timer_next => {
-                //                        Next::PeriodicTimer
-                //                    }
+                    from_client_result = from_client_message_receiver_next => {
+                        Next::FromClientMessage(
+                            match from_client_result {
+                                Ok(msg) => {
+                                    Ok(Packet::new(msg.remote_addr, msg.message.as_ref().to_vec()))
                                 }
+                                Err(err) => { Err(err) }
+                            }
+                        )
+                    }
+                    to_client_message = to_client_receiver_next => {
+                        Next::ToClientMessage(
+                            to_client_message.expect("to server message receiver closed")
+                        )
+                    }
+                }
             };
 
             match next {
                 Next::FromClientMessage(from_client_message) => match from_client_message {
-                    Ok(message_result) => {
-                        let address = message_result.remote_addr;
-                        let payload: Vec<u8> = self.receive_buffer[0..message_result.message_len]
-                            .iter()
-                            .cloned()
-                            .collect();
-                        return Ok(Packet::new_raw(address, payload.into_boxed_slice()));
+                    Ok(packet) => {
+                        return Ok(packet);
                     }
                     Err(err) => {
                         return Err(NaiaServerSocketError::Wrapped(Box::new(err)));
@@ -158,9 +154,7 @@ impl ServerSocketTrait for WebrtcServerSocket {
                         }
                         _ => {}
                     }
-                } /*                Next::PeriodicTimer => {
-                   *                    return Ok(SocketEvent::Tick);
-                   *                } */
+                }
             }
         }
     }
@@ -205,8 +199,8 @@ impl RtcServer {
         self.inner.session_endpoint()
     }
 
-    pub async fn recv(&mut self, buf: &mut [u8]) -> Result<MessageResult, RecvError> {
-        self.inner.recv(buf).await
+    pub async fn recv(&mut self) -> Result<MessageResult<'_>, IoError> {
+        self.inner.recv().await
     }
 
     pub async fn send(
