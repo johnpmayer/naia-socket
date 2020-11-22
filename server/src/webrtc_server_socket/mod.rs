@@ -1,24 +1,13 @@
+mod session;
+use session::start_session_server;
+
 use std::{
-    future::Future,
     io::Error as IoError,
     net::{IpAddr, SocketAddr, TcpListener},
-    panic::catch_unwind,
-    thread,
 };
-
-use async_executor::{Executor, Task};
-use async_io::block_on;
-use futures_lite::future;
-use once_cell::sync::Lazy;
 
 use async_trait::async_trait;
-use hyper::{
-    header::{self, HeaderValue},
-    server::conn::AddrStream,
-    service::{make_service_fn, service_fn},
-    Body, Error as HyperError, Method, Response, Server, StatusCode,
-};
-use log::info;
+
 use webrtc_unreliable::{
     MessageResult, MessageType, SendError, Server as InnerRtcServer, SessionEndpoint,
 };
@@ -57,40 +46,7 @@ impl WebrtcServerSocket {
             to_client_receiver,
         };
 
-        let session_endpoint = socket.rtc_server.session_endpoint();
-        let make_svc = make_service_fn(move |addr_stream: &AddrStream| {
-            let session_endpoint = session_endpoint.clone();
-            let remote_addr = addr_stream.remote_addr();
-            async move {
-                Ok::<_, HyperError>(service_fn(move |req| {
-                    let mut session_endpoint = session_endpoint.clone();
-                    async move {
-                        if req.uri().path() == "/new_rtc_session" && req.method() == Method::POST {
-                            info!("WebRTC session request from {}", remote_addr);
-                            match session_endpoint.http_session_request(req.into_body()).await {
-                                Ok(mut resp) => {
-                                    resp.headers_mut().insert(
-                                        header::ACCESS_CONTROL_ALLOW_ORIGIN,
-                                        HeaderValue::from_static("*"),
-                                    );
-                                    Ok(resp.map(Body::from))
-                                }
-                                Err(err) => Response::builder()
-                                    .status(StatusCode::BAD_REQUEST)
-                                    .body(Body::from(format!("error: {}", err))),
-                            }
-                        } else {
-                            Response::builder()
-                                .status(StatusCode::NOT_FOUND)
-                                .body(Body::from("not found"))
-                        }
-                    }
-                }))
-            }
-        });
-
-        //gotta spawn this into a separate thread w/o tokio
-        Server::bind(&socket_address).serve(make_svc).await;
+        start_session_server(socket_address, &socket.rtc_server.session_endpoint());
 
         Box::new(socket)
     }
