@@ -45,9 +45,7 @@ impl ServerSocketTrait for LinkConditioner {
 
                 let buffered_next = {
                     match queue_duration {
-                        Some(instant) => {
-                            Timer::at(instant).fuse()
-                        }
+                        Some(instant) => Timer::at(instant).fuse(),
                         None => Timer::at(
                             std::time::Instant::now()
                                 + Duration::from_secs_f64(60.0 * 60.0 * 24.0 * 365.0), // delay for a year because I couldn't figure out how to get a never-completing future in here
