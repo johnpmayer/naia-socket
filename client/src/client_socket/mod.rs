@@ -30,16 +30,12 @@ pub trait ClientSocketTrait: ClientSocketBaseTrait {
 cfg_if! {
     if #[cfg(target_arch = "wasm32")] {
         // WebRTC Client //
-        mod webrtc_client_socket;
-        pub use webrtc_client_socket::WebrtcClientSocket;
-        /// ClientSocket is an alias for a socket abstraction using either UDP or WebRTC for communications
-        pub type ClientSocket = WebrtcClientSocket;
+        mod webrtc;
+        pub use webrtc::ClientSocket;
     }
     else {
         // UDP Client //
-        mod udp_client_socket;
-        pub use udp_client_socket::UdpClientSocket;
-        /// ClientSocket is an alias for a socket abstraction using either UDP or WebRTC for communications
-        pub type ClientSocket = UdpClientSocket;
+        mod udp;
+        pub use udp::ClientSocket;
     }
 }

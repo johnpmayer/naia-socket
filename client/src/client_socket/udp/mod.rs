@@ -14,15 +14,18 @@ use crate::{
 
 use crate::{error::NaiaClientSocketError, Packet};
 
+/// A client-side socket which communicates with an underlying unordered &
+/// unreliable protocol
 #[derive(Debug)]
-pub struct UdpClientSocket {
+pub struct ClientSocket {
     address: SocketAddr,
     socket: Ref<UdpSocket>,
     receive_buffer: Vec<u8>,
     message_sender: MessageSender,
 }
 
-impl UdpClientSocket {
+impl ClientSocket {
+    /// Returns a new ClientSocket, connected to the given socket address
     pub fn connect(server_socket_address: SocketAddr) -> Box<dyn ClientSocketTrait> {
         let client_ip_address = find_my_ip_address().expect("cannot find current ip address");
         let free_socket = find_available_port(&client_ip_address).expect("no available ports");
@@ -36,7 +39,7 @@ impl UdpClientSocket {
 
         let message_sender = MessageSender::new(server_socket_address, socket.clone());
 
-        Box::new(UdpClientSocket {
+        Box::new(ClientSocket {
             address: server_socket_address,
             socket,
             receive_buffer: vec![0; 1472],
@@ -45,7 +48,7 @@ impl UdpClientSocket {
     }
 }
 
-impl ClientSocketTrait for UdpClientSocket {
+impl ClientSocketTrait for ClientSocket {
     fn receive(&mut self) -> Result<Option<Packet>, NaiaClientSocketError> {
         let buffer: &mut [u8] = self.receive_buffer.as_mut();
         match self

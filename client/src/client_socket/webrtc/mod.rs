@@ -10,15 +10,18 @@ use crate::{
 
 use naia_socket_shared::LinkConditionerConfig;
 
+/// A client-side socket which communicates with an underlying unordered &
+/// unreliable protocol
 #[derive(Debug)]
-pub struct WebrtcClientSocket {
+pub struct ClientSocket {
     address: SocketAddr,
     message_queue: Rc<RefCell<VecDeque<Result<Option<Packet>, NaiaClientSocketError>>>>,
     message_sender: MessageSender,
     dropped_outgoing_messages: Rc<RefCell<VecDeque<Packet>>>,
 }
 
-impl WebrtcClientSocket {
+impl ClientSocket {
+    /// Returns a new ClientSocket, connected to the given socket address
     pub fn connect(server_socket_address: SocketAddr) -> Box<dyn ClientSocketTrait> {
         let message_queue = Rc::new(RefCell::new(VecDeque::new()));
         let data_channel = webrtc_initialize(server_socket_address, message_queue.clone());
@@ -28,7 +31,7 @@ impl WebrtcClientSocket {
         let message_sender =
             MessageSender::new(data_channel.clone(), dropped_outgoing_messages.clone());
 
-        Box::new(WebrtcClientSocket {
+        Box::new(ClientSocket {
             address: server_socket_address,
             message_queue,
             message_sender,
@@ -37,7 +40,7 @@ impl WebrtcClientSocket {
     }
 }
 
-impl ClientSocketTrait for WebrtcClientSocket {
+impl ClientSocketTrait for ClientSocket {
     fn receive(&mut self) -> Result<Option<Packet>, NaiaClientSocketError> {
         if !self.dropped_outgoing_messages.borrow().is_empty() {
             if let Some(dropped_packets) = {

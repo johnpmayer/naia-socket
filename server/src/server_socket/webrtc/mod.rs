@@ -24,14 +24,17 @@ use crate::{
 
 const CLIENT_CHANNEL_SIZE: usize = 8;
 
+/// A socket server which communicates with clients using an underlying
+/// unordered & unreliable network protocol
 #[derive(Debug)]
-pub struct WebrtcServerSocket {
+pub struct ServerSocket {
     rtc_server: RtcServer,
     to_client_sender: mpsc::Sender<Packet>,
     to_client_receiver: mpsc::Receiver<Packet>,
 }
 
-impl WebrtcServerSocket {
+impl ServerSocket {
+    /// Returns a new ServerSocket, listening at the given socket address
     pub async fn listen(socket_address: SocketAddr) -> Box<dyn ServerSocketTrait> {
         let webrtc_listen_ip: IpAddr = socket_address.ip();
         let webrtc_listen_port =
@@ -42,7 +45,7 @@ impl WebrtcServerSocket {
 
         let rtc_server = RtcServer::new(webrtc_listen_addr).await;
 
-        let socket = WebrtcServerSocket {
+        let socket = ServerSocket {
             rtc_server,
             to_client_sender,
             to_client_receiver,
@@ -55,7 +58,7 @@ impl WebrtcServerSocket {
 }
 
 #[async_trait]
-impl ServerSocketTrait for WebrtcServerSocket {
+impl ServerSocketTrait for ServerSocket {
     async fn receive(&mut self) -> Result<Packet, NaiaServerSocketError> {
         enum Next {
             FromClientMessage(Result<Packet, IoError>),

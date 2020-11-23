@@ -24,15 +24,11 @@ cfg_if! {
     if #[cfg(feature = "use-webrtc")] {
         // WebRTC Server ///
         mod webrtc;
-        pub use webrtc::WebrtcServerSocket;
-        /// ServerSocket is an alias for a socket abstraction using either UDP or WebRTC for communications
-        pub type ServerSocket = WebrtcServerSocket;
+        pub use webrtc::ServerSocket;
     }
     else if #[cfg(feature = "use-udp")] {
         // UDP Server
         mod udp;
-        pub use udp::UdpServerSocket;
-        /// ServerSocket is an alias for a socket abstraction using either UDP or WebRTC for communications
-        pub type ServerSocket = UdpServerSocket;
+        pub use udp::ServerSocket;
     }
 }

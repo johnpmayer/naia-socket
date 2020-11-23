@@ -15,21 +15,24 @@ use crate::{link_conditioner::LinkConditioner, message_sender::MessageSender};
 
 const CLIENT_CHANNEL_SIZE: usize = 8;
 
+/// A socket server which communicates with clients using an underlying
+/// unordered & unreliable network protocol
 #[derive(Debug)]
-pub struct UdpServerSocket {
+pub struct ServerSocket {
     socket: Async<UdpSocket>,
     to_client_sender: mpsc::Sender<Packet>,
     to_client_receiver: mpsc::Receiver<Packet>,
     receive_buffer: Vec<u8>,
 }
 
-impl UdpServerSocket {
+impl ServerSocket {
+    /// Returns a new ServerSocket, listening at the given socket address
     pub async fn listen(socket_address: SocketAddr) -> Box<dyn ServerSocketTrait> {
         let socket = Async::new(UdpSocket::bind(&socket_address).unwrap()).unwrap();
 
         let (to_client_sender, to_client_receiver) = mpsc::channel(CLIENT_CHANNEL_SIZE);
 
-        Box::new(UdpServerSocket {
+        Box::new(ServerSocket {
             socket,
             to_client_sender,
             to_client_receiver,
@@ -40,7 +43,7 @@ impl UdpServerSocket {
 }
 
 #[async_trait]
-impl ServerSocketTrait for UdpServerSocket {
+impl ServerSocketTrait for ServerSocket {
     async fn receive(&mut self) -> Result<Packet, NaiaServerSocketError> {
         enum Next {
             FromClientMessage(Result<(usize, SocketAddr), IoError>),
