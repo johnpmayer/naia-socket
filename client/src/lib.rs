@@ -20,11 +20,8 @@ cfg_if! {
     if #[cfg(target_arch = "wasm32")] {
         #[macro_use]
         extern crate serde_derive;
-
-        mod webrtc_client_socket;
     }
     else {
-        mod udp_client_socket;
     }
 }
 

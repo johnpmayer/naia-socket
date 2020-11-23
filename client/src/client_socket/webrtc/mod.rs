@@ -3,11 +3,10 @@ use log::info;
 
 use std::{cell::RefCell, collections::VecDeque, net::SocketAddr, rc::Rc};
 
-use super::{
-    client_socket::ClientSocketTrait, link_conditioner::LinkConditioner,
-    message_sender::MessageSender,
+use crate::{
+    client_socket::ClientSocketTrait, error::NaiaClientSocketError,
+    link_conditioner::LinkConditioner, message_sender::MessageSender, Packet,
 };
-use crate::{error::NaiaClientSocketError, Packet};
 
 use naia_socket_shared::LinkConditionerConfig;
 

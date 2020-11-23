@@ -11,7 +11,7 @@ use naia_socket_shared::LinkConditionerConfig;
 
 use crate::{error::NaiaServerSocketError, Packet, ServerSocketTrait};
 
-use super::{link_conditioner::LinkConditioner, message_sender::MessageSender};
+use crate::{link_conditioner::LinkConditioner, message_sender::MessageSender};
 
 const CLIENT_CHANNEL_SIZE: usize = 8;
 

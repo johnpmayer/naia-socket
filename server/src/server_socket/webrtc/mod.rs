@@ -17,8 +17,10 @@ use futures_util::{pin_mut, select, FutureExt, StreamExt};
 
 use naia_socket_shared::LinkConditionerConfig;
 
-use super::{link_conditioner::LinkConditioner, message_sender::MessageSender};
-use crate::{error::NaiaServerSocketError, Packet, ServerSocketTrait};
+use crate::{
+    error::NaiaServerSocketError, link_conditioner::LinkConditioner, message_sender::MessageSender,
+    Packet, ServerSocketTrait,
+};
 
 const CLIENT_CHANNEL_SIZE: usize = 8;
 

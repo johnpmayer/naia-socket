@@ -18,19 +18,17 @@ extern crate log;
 #[macro_use]
 extern crate cfg_if;
 
+mod server_socket;
+
 cfg_if! {
     if #[cfg(all(feature = "use-webrtc", not(feature = "use-udp")))]
     {
         // Use WebRTC
-        mod webrtc_server_socket;
-        mod server_socket;
         pub use server_socket::{ServerSocket, ServerSocketTrait};
     }
     else if #[cfg(all(feature = "use-udp", not(feature = "use-webrtc")))]
     {
         // Use UDP
-        mod udp_server_socket;
-        mod server_socket;
         pub use server_socket::{ServerSocket, ServerSocketTrait};
     }
     else if #[cfg(all(feature = "use-udp", feature = "use-webrtc"))]

@@ -7,7 +7,7 @@ use std::{
 
 use naia_socket_shared::{find_available_port, find_my_ip_address, LinkConditionerConfig, Ref};
 
-use super::{
+use crate::{
     client_socket::ClientSocketTrait, link_conditioner::LinkConditioner,
     message_sender::MessageSender,
 };
