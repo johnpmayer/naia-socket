@@ -1,6 +1,6 @@
 {
   "author": "Connor Carpenter",
-  "name": "naia-client-socket-example",
+  "name": "naia-client-socket-bindgen-example",
   "version": "0.1.0",
   "scripts": {
     "build": "rimraf dist pkg && webpack",
