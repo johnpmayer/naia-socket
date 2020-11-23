@@ -15,7 +15,7 @@ async fn main() -> std::io::Result<()> {
             .wrap(middleware::Logger::default())
             .service(web::resource("/livereload/").route(web::get().to(ws_index)))
             .service(
-                Files::new("/", "./examples/client/miniquad/dev-http-server/dist/")
+                Files::new("/", "./examples/client/miniquad/dev_http_server/dist/")
                     .index_file("index.html"),
             )
     })

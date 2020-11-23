@@ -1,8 +1,8 @@
 cfg_if! {
     if #[cfg(target_arch = "wasm32")] {
-        // WebRTC Sender //
-        mod webrtc;
-        pub use webrtc::MessageSender;
+        // WasmBindgen WebRTC Sender //
+        mod wasm_bindgen;
+        pub use self::wasm_bindgen::MessageSender;
     }
     else {
         // UDP Sender //

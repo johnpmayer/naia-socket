@@ -4,7 +4,7 @@ xdg-open http://localhost:3111/
 # replace 'client' & 'webserver' below with the appropriate directory names for your project
 working_dir='examples/client/miniquad'
 client='naia-client-socket-miniquad-example'
-webserver_dir='dev-http-server'
+webserver_dir='dev_http_server'
 
 get_reload_actions(){
   local OUTPUT=''

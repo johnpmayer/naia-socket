@@ -4,7 +4,7 @@ members = [
     "server",
     "shared",
     "examples/server",
-    "examples/client/wasm-bindgen",
+    "examples/client/wasm_bindgen",
     "examples/client/miniquad",
-    "examples/client/miniquad/dev-http-server"
+    "examples/client/miniquad/dev_http_server"
     ]

@@ -3,10 +3,10 @@
 .idea/*
 /Cargo.lock
 node_modules
-examples/client/miniquad/dev-http-server/Cargo.lock
-examples/client/miniquad/dev-http-server/dist
-examples/client/miniquad/dev-http-server/dist/
-examples/client/miniquad/dev-http-server/dist/*
-examples/client/miniquad/dev-http-server/target
-examples/client/miniquad/dev-http-server/target/
-examples/client/miniquad/dev-http-server/target/*
+examples/client/miniquad/dev_http_server/Cargo.lock
+examples/client/miniquad/dev_http_server/dist
+examples/client/miniquad/dev_http_server/dist/
+examples/client/miniquad/dev_http_server/dist/*
+examples/client/miniquad/dev_http_server/target
+examples/client/miniquad/dev_http_server/target/
+examples/client/miniquad/dev_http_server/target/*

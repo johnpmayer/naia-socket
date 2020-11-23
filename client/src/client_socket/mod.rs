@@ -29,9 +29,9 @@ pub trait ClientSocketTrait: ClientSocketBaseTrait {
 
 cfg_if! {
     if #[cfg(target_arch = "wasm32")] {
-        // WebRTC Client //
-        mod webrtc;
-        pub use webrtc::ClientSocket;
+        // WasmBindgen WebRTC Client //
+        mod wasm_bindgen;
+        pub use self::wasm_bindgen::ClientSocket;
     }
     else {
         // UDP Client //
