@@ -35,12 +35,16 @@ To run a UDP client on Linux: (that will be able to communicate with a UDP serve
     1. cd examples/client
     2. cargo run
 
-To run a WebRTC client on Web: (that will be able to communicate with a WebRTC server)
+To run a WebRTC client on Web using wasm-bindgen: (that will be able to communicate with a WebRTC server)
 
-    1. Enter in your IP Address at the appropriate spot in examples/client/src/app.rs
-    2. cd examples/client
+    1. Enter in your IP Address at the appropriate spot in examples/client/wasm-bindgen/src/app.rs
+    2. cd examples/client/wasm-bindgen
     3. npm install              //should only need to do this once to install dependencies
     4. npm run start            //this will open a web browser, and hot reload
+
+To run a WebRTC client on Web using miniquad: (that will be able to communicate with a WebRTC server)
+
+    FORTHCOMING
 
 
 To simply build these examples instead of running them, substitute the above commands like so:
