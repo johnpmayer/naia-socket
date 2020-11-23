@@ -1,5 +1,5 @@
 #!/bin/bash
-xdg-open http://localhost:3177/
+xdg-open http://localhost:3111/
 
 # replace 'client' & 'webserver' below with the appropriate directory names for your project
 working_dir='examples/client/miniquad'
@@ -17,9 +17,8 @@ get_reload_actions(){
   cp target/wasm32-unknown-unknown/debug/%s.wasm %s/%s/dist/%s.wasm &&
   cp -a %s/static/. %s/%s/dist/ &&
   cp -a %s/js/. %s/%s/dist/ &&
-  cd %s/%s &&
   cargo run --bin %s'
-  printf -v OUTPUT "$FMT" $d $w $d $w $c $c $d $w $c $d $d $w $d $d $w $d $w $w
+  printf -v OUTPUT "$FMT" $d $w $d $w $c $c $d $w $c $d $d $w $d $d $w $w
   echo $OUTPUT
 }
 

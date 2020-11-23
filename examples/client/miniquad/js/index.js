@@ -45,7 +45,7 @@ const naia_socket = {
             _this.channel.onmessage = function(evt) {
                 let array = new Uint8Array(evt.data);
                 let in_msg = _this.decoder.decode(array);
-                interop.wasm_exports.receive(obj_manager.js_object(in_msg));
+                wasm_exports.receive(obj_manager.js_object(in_msg));
             };
         };
 
@@ -94,7 +94,7 @@ const naia_socket = {
 
     error: function (desc, err) {
         err['naia_desc'] = desc;
-        interop.wasm_exports.error(this.js_object(JSON.stringify(err)));
+        wasm_exports.error(this.js_object(JSON.stringify(err)));
     },
 
     send_str: function (str) {
@@ -139,7 +139,7 @@ const obj_manager = {
     },
 
     js_create_string: function (buf, max_len) {
-        let string = interop.UTF8ToString(buf, max_len);
+        let string = UTF8ToString(buf, max_len);
         return this.js_object(string);
     },
 
@@ -147,7 +147,7 @@ const obj_manager = {
         let str = this.js_objects[js_object];
         let utf8array = this.toUTF8Array(str);
         let length = utf8array.length;
-        let dest = new Uint8Array(interop.wasm_memory.buffer, buf, max_len);
+        let dest = new Uint8Array(wasm_memory.buffer, buf, max_len);
         for (let i = 0; i < length; i++) {
             dest[i] = utf8array[i];
         }
@@ -205,108 +205,5 @@ const obj_manager = {
     }
 };
 
-// Interop stuff
-const interop = {
-    wasm_memory: null,
-    wasm_exports: null,
-    importObject: {
-        env: {}
-    },
-    plugins: [],
-
-    plugin: function (importObject) {
-        importObject.env.start_loop = function () { setInterval(function() { interop.wasm_exports.update(); }, 1); };
-        importObject.env.js_log = function (message) { interop.js_log(message); };
-    },
-
-    js_log: function (message) {
-        let message_string = obj_manager.get_js_object(message);
-        console.log(message_string);
-    },
-
-    UTF8ToString: function (ptr, maxBytesToRead) {
-        let u8Array = new Uint8Array(this.wasm_memory.buffer, ptr);
-        let idx = 0;
-        let endIdx = idx + maxBytesToRead;
-        let str = '';
-        while (!(idx >= endIdx)) {
-            let u0 = u8Array[idx++];
-            if (!u0) return str;
-
-            if (!(u0 & 0x80)) { str += String.fromCharCode(u0); continue; }
-            let u1 = u8Array[idx++] & 63;
-            if ((u0 & 0xE0) === 0xC0) { str += String.fromCharCode(((u0 & 31) << 6) | u1); continue; }
-            let u2 = u8Array[idx++] & 63;
-            if ((u0 & 0xF0) === 0xE0) {
-                u0 = ((u0 & 15) << 12) | (u1 << 6) | u2;
-            } else {
-                if ((u0 & 0xF8) !== 0xF0) console.warn('Invalid UTF-8 leading byte 0x' + u0.toString(16) + ' encountered when deserializing a UTF-8 string on the asm.js/wasm heap to a JS string!');
-                u0 = ((u0 & 7) << 18) | (u1 << 12) | (u2 << 6) | (u8Array[idx++] & 63);
-            }
-            if (u0 < 0x10000) {
-                str += String.fromCharCode(u0);
-            } else {
-                var ch = u0 - 0x10000;
-                str += String.fromCharCode(0xD800 | (ch >> 10), 0xDC00 | (ch & 0x3FF));
-            }
-        }
-        return str;
-    },
-
-    register_plugins: function () {
-        if (this.plugins === undefined)
-            return;
-
-        for (let i = 0; i < this.plugins.length; i++) {
-            if (this.plugins[i].register_plugin !== undefined && this.plugins[i].register_plugin != null) {
-                this.plugins[i].register_plugin(this.importObject);
-            }
-        }
-    },
-
-    init_plugins: function () {
-        if (this.plugins === undefined)
-            return;
-
-        for (let i = 0; i < this.plugins.length; i++) {
-            if (this.plugins[i].on_init !== undefined && this.plugins[i].on_init != null) {
-                this.plugins[i].on_init();
-            }
-        }
-    },
-
-    add_plugin: function (plugin) {
-        this.plugins.push(plugin);
-    },
-
-    load: function (wasm_path) {
-        const _this = this;
-        let req = fetch(wasm_path);
-
-        this.register_plugins();
-
-        if (typeof WebAssembly.instantiateStreaming === 'function') {
-            WebAssembly.instantiateStreaming(req, this.importObject)
-                .then(obj => {
-                    _this.wasm_memory = obj.instance.exports.memory;
-                    _this.wasm_exports = obj.instance.exports;
-                    _this.init_plugins();
-                    obj.instance.exports.main();
-                });
-        } else {
-            req
-                .then(function (x) { return x.arrayBuffer(); })
-                .then(function (bytes) { return WebAssembly.instantiate(bytes, _this.importObject); })
-                .then(function (obj) {
-                    _this.wasm_memory = obj.instance.exports.memory;
-                    _this.wasm_exports = obj.instance.exports;
-                    _this.init_plugins();
-                    obj.instance.exports.main();
-                });
-        }
-    }
-};
-
-interop.add_plugin({ register_plugin: interop.plugin });
-interop.add_plugin({ register_plugin: obj_manager.plugin });
-interop.add_plugin({ register_plugin: naia_socket.plugin });
+miniquad_add_plugin({ register_plugin: obj_manager.plugin });
+miniquad_add_plugin({ register_plugin: naia_socket.plugin });

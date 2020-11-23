@@ -8,3 +8,6 @@ license = "MIT OR Apache-2.0"
 [[bin]]
 name = "naia-client-socket-miniquad-example"
 path = "src/main.rs"
+
+[dependencies]
+miniquad = { version = "0.2", features = ["log-impl"] }

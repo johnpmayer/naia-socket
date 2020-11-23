@@ -14,9 +14,12 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .wrap(middleware::Logger::default())
             .service(web::resource("/livereload/").route(web::get().to(ws_index)))
-            .service(Files::new("/", "./dist/").index_file("index.html"))
+            .service(
+                Files::new("/", "./examples/client/miniquad/dev-http-server/dist/")
+                    .index_file("index.html"),
+            )
     })
-    .bind("127.0.0.1:3177")?
+    .bind("127.0.0.1:3111")?
     .run()
     .await
 }

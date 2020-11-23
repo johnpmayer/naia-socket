@@ -1,5 +1,7 @@
 use std::collections::VecDeque;
 
+use miniquad::*;
+
 static mut MESSAGE_COUNT: u8 = 0;
 static mut MESSAGE_QUEUE: Option<VecDeque<String>> = None;
 static mut ERROR_QUEUE: Option<VecDeque<String>> = None;
@@ -67,35 +69,7 @@ pub extern "C" fn error(error: JsObject) {
 }
 
 #[no_mangle]
-pub extern "C" fn update() {
-    unsafe {
-        resend_dropped_messages();
-
-        if let Some(msg_queue) = &mut MESSAGE_QUEUE {
-            if let Some(message) = msg_queue.pop_front() {
-                log(format!("recv: {}", &message));
-
-                if MESSAGE_COUNT < 10 {
-                    let out_msg = "ping";
-                    log(format!("send: {}", &out_msg));
-                    send(JsObject::string(out_msg));
-                    MESSAGE_COUNT += 1;
-                }
-            }
-        }
-
-        if let Some(error_queue) = &mut ERROR_QUEUE {
-            if let Some(error) = error_queue.pop_front() {
-                log(format!("error: {}", &error));
-            }
-        }
-    };
-}
-
-#[no_mangle]
 extern "C" {
-    fn start_loop();
-    fn js_log(message: JsObject);
     fn connect(server_socket_address: JsObject);
     fn send(message: JsObject);
     fn resend_dropped_messages();
@@ -105,18 +79,46 @@ extern "C" {
     fn js_string_length(js_object: JsObjectWeak) -> u32;
 }
 
+struct Stage {
+    ctx: Context,
+}
+impl EventHandlerFree for Stage {
+    fn update(&mut self) {
+        unsafe {
+            resend_dropped_messages();
+
+            if let Some(msg_queue) = &mut MESSAGE_QUEUE {
+                if let Some(message) = msg_queue.pop_front() {
+                    miniquad::debug!("recv: {}", &message);
+
+                    if MESSAGE_COUNT < 10 {
+                        let out_msg = "ping";
+                        miniquad::debug!("send: {}", &out_msg);
+                        send(JsObject::string(out_msg));
+                        MESSAGE_COUNT += 1;
+                    }
+                }
+            }
+
+            if let Some(error_queue) = &mut ERROR_QUEUE {
+                if let Some(error) = error_queue.pop_front() {
+                    miniquad::debug!("error: {}", &error);
+                }
+            }
+        };
+    }
+
+    fn draw(&mut self) {
+        self.ctx.clear(Some((0., 1., 0., 1.)), None, None);
+    }
+}
+
 fn main() {
     unsafe {
         MESSAGE_QUEUE = Some(VecDeque::new());
         ERROR_QUEUE = Some(VecDeque::new());
-        start_loop();
         connect(JsObject::string("192.168.86.38:14191"));
         send(JsObject::string("ping"));
-    };
-}
-
-fn log(msg: String) {
-    unsafe {
-        js_log(JsObject::string(msg.as_str()));
     }
+    miniquad::start(conf::Conf::default(), |ctx| UserData::free(Stage { ctx }));
 }
