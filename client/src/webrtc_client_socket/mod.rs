@@ -1,7 +1,7 @@
 extern crate log;
 use log::info;
 
-use std::{cell::RefCell, collections::VecDeque, net::SocketAddr, rc::Rc};
+use std::{collections::VecDeque, net::SocketAddr};
 
 use super::{
     client_socket::ClientSocketTrait, link_conditioner::LinkConditioner,
@@ -9,22 +9,22 @@ use super::{
 };
 use crate::{error::NaiaClientSocketError, Packet};
 
-use naia_socket_shared::LinkConditionerConfig;
+use naia_socket_shared::{LinkConditionerConfig, Ref};
 
 #[derive(Debug)]
 pub struct WebrtcClientSocket {
     address: SocketAddr,
-    message_queue: Rc<RefCell<VecDeque<Result<Option<Packet>, NaiaClientSocketError>>>>,
+    message_queue: Ref<VecDeque<Result<Option<Packet>, NaiaClientSocketError>>>,
     message_sender: MessageSender,
-    dropped_outgoing_messages: Rc<RefCell<VecDeque<Packet>>>,
+    dropped_outgoing_messages: Ref<VecDeque<Packet>>,
 }
 
 impl WebrtcClientSocket {
     pub fn connect(server_socket_address: SocketAddr) -> Box<dyn ClientSocketTrait> {
-        let message_queue = Rc::new(RefCell::new(VecDeque::new()));
+        let message_queue = Ref::new(VecDeque::new());
         let data_channel = webrtc_initialize(server_socket_address, message_queue.clone());
 
-        let dropped_outgoing_messages = Rc::new(RefCell::new(VecDeque::new()));
+        let dropped_outgoing_messages = Ref::new(VecDeque::new());
 
         let message_sender =
             MessageSender::new(data_channel.clone(), dropped_outgoing_messages.clone());
@@ -42,7 +42,7 @@ impl ClientSocketTrait for WebrtcClientSocket {
     fn receive(&mut self) -> Result<Option<Packet>, NaiaClientSocketError> {
         if !self.dropped_outgoing_messages.borrow().is_empty() {
             if let Some(dropped_packets) = {
-                let mut dom = self.dropped_outgoing_messages.borrow_mut();
+                let mut dom = self.dropped_outgoing_messages.borrow();
                 let dropped_packets: Vec<Packet> = dom.drain(..).collect::<Vec<Packet>>();
                 Some(dropped_packets)
             } {
@@ -63,7 +63,7 @@ impl ClientSocketTrait for WebrtcClientSocket {
 
             match self
                 .message_queue
-                .borrow_mut()
+                .borrow()
                 .pop_front()
                 .expect("message queue shouldn't be empty!")
             {
@@ -129,9 +129,10 @@ pub struct IceServerConfig {
     pub urls: [String; 1],
 }
 
+#[allow(unused_must_use)]
 fn webrtc_initialize(
     socket_address: SocketAddr,
-    msg_queue: Rc<RefCell<VecDeque<Result<Option<Packet>, NaiaClientSocketError>>>>,
+    msg_queue: Ref<VecDeque<Result<Option<Packet>, NaiaClientSocketError>>>,
 ) -> RtcDataChannel {
     let server_url_str = format!("http://{}/new_rtc_session", socket_address);
 
@@ -164,7 +165,7 @@ fn webrtc_initialize(
                     let mut body = vec![0; uarray.length() as usize];
                     uarray.copy_to(&mut body[..]);
                     msg_queue_clone_2
-                        .borrow_mut()
+                        .borrow()
                         .push_back(Ok(Some(Packet::new(body))));
                 }
             });
@@ -185,7 +186,7 @@ fn webrtc_initialize(
     onerror_callback.forget();
 
     let peer_clone = peer.clone();
-    let server_url_msg = Rc::new(server_url_str);
+    let server_url_msg = Ref::new(server_url_str);
     let peer_offer_func: Box<dyn FnMut(JsValue)> = Box::new(move |e: JsValue| {
         let session_description = e.dyn_into::<RtcSessionDescription>().unwrap();
         let peer_clone_2 = peer_clone.clone();
@@ -194,7 +195,7 @@ fn webrtc_initialize(
             let request = XmlHttpRequest::new().expect("can't create new XmlHttpRequest");
 
             request
-                .open("POST", &server_url_msg_clone)
+                .open("POST", &server_url_msg_clone.borrow())
                 .unwrap_or_else(|err| {
                     info!(
                         "WebSys, can't POST to server url. Original Error: {:?}",

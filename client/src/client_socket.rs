@@ -33,6 +33,13 @@ cfg_if! {
         pub use crate::webrtc_client_socket::WebrtcClientSocket;
         /// ClientSocket is an alias for a socket abstraction using either UDP or WebRTC for communications
         pub type ClientSocket = WebrtcClientSocket;
+
+        #[allow(unsafe_code)]
+        #[cfg(feature = "multithread")]
+        unsafe impl Send for WebrtcClientSocket {}
+        #[allow(unsafe_code)]
+        #[cfg(feature = "multithread")]
+        unsafe impl Sync for WebrtcClientSocket {}
     }
     else {
         // UDP Client //
