@@ -42,7 +42,7 @@ impl ClientSocketTrait for WebrtcClientSocket {
     fn receive(&mut self) -> Result<Option<Packet>, NaiaClientSocketError> {
         if !self.dropped_outgoing_messages.borrow().is_empty() {
             if let Some(dropped_packets) = {
-                let mut dom = self.dropped_outgoing_messages.borrow();
+                let mut dom = self.dropped_outgoing_messages.borrow_mut();
                 let dropped_packets: Vec<Packet> = dom.drain(..).collect::<Vec<Packet>>();
                 Some(dropped_packets)
             } {
@@ -63,7 +63,7 @@ impl ClientSocketTrait for WebrtcClientSocket {
 
             match self
                 .message_queue
-                .borrow()
+                .borrow_mut()
                 .pop_front()
                 .expect("message queue shouldn't be empty!")
             {
@@ -165,7 +165,7 @@ fn webrtc_initialize(
                     let mut body = vec![0; uarray.length() as usize];
                     uarray.copy_to(&mut body[..]);
                     msg_queue_clone_2
-                        .borrow()
+                        .borrow_mut()
                         .push_back(Ok(Some(Packet::new(body))));
                 }
             });

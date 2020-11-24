@@ -64,7 +64,7 @@ cfg_if! {
     } else {
         use std::{
             cell::{Ref as StdRef, RefMut as StdRefMut, RefCell},
-            ops::Deref,
+            ops::{Deref, DerefMut},
             rc::Rc,
         };
 
@@ -91,6 +91,12 @@ cfg_if! {
 
             fn deref(&self) -> &Self::Target {
                 Deref::deref(&self.inner)
+            }
+        }
+
+        impl<'a, T> DerefMut for GuardMut<'a, T> {
+            fn deref_mut(&mut self) -> &mut Self::Target {
+                &mut self.inner
             }
         }
 
