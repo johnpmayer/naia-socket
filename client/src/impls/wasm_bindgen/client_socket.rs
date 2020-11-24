@@ -4,8 +4,8 @@ use log::info;
 use std::{cell::RefCell, collections::VecDeque, net::SocketAddr, rc::Rc};
 
 use crate::{
-    client_socket::ClientSocketTrait, error::NaiaClientSocketError,
-    link_conditioner::LinkConditioner, message_sender::MessageSender, Packet,
+    error::NaiaClientSocketError, link_conditioner::LinkConditioner, ClientSocketTrait,
+    MessageSender, Packet,
 };
 
 use naia_socket_shared::LinkConditionerConfig;
@@ -241,9 +241,9 @@ fn webrtc_initialize(
                             let peer_add_failure_callback = Closure::wrap(peer_add_failure_func);
 
                             peer_clone_4.add_ice_candidate_with_rtc_ice_candidate_and_success_callback_and_failure_callback(
-                            &candidate,
-                            peer_add_success_callback.as_ref().unchecked_ref(),
-                            peer_add_failure_callback.as_ref().unchecked_ref());
+                                &candidate,
+                                peer_add_success_callback.as_ref().unchecked_ref(),
+                                peer_add_failure_callback.as_ref().unchecked_ref());
                             peer_add_success_callback.forget();
                             peer_add_failure_callback.forget();
                         },

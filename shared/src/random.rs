@@ -1,5 +1,5 @@
 cfg_if! {
-    if #[cfg(target_arch = "wasm32")] {
+    if #[cfg(all(target_arch = "wasm32", feature = "wasm_bindgen"))] {
         // Wasm //
         use js_sys::Math::random;
         /// returns a random f32 value between an upper & lower bound

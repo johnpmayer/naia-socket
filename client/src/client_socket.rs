@@ -2,7 +2,8 @@ use std::fmt::Debug;
 
 use naia_socket_shared::LinkConditionerConfig;
 
-use super::{error::NaiaClientSocketError, message_sender::MessageSender, packet::Packet};
+use super::{error::NaiaClientSocketError, packet::Packet};
+use crate::MessageSender;
 
 cfg_if! {
     if #[cfg(feature = "multithread")] {
@@ -25,17 +26,4 @@ pub trait ClientSocketTrait: ClientSocketBaseTrait {
         self: Box<Self>,
         config: &LinkConditionerConfig,
     ) -> Box<dyn ClientSocketTrait>;
-}
-
-cfg_if! {
-    if #[cfg(target_arch = "wasm32")] {
-        // WasmBindgen WebRTC Client //
-        mod wasm_bindgen;
-        pub use self::wasm_bindgen::ClientSocket;
-    }
-    else {
-        // UDP Client //
-        mod udp;
-        pub use udp::ClientSocket;
-    }
 }
