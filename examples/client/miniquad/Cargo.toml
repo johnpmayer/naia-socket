@@ -9,5 +9,12 @@ license = "MIT OR Apache-2.0"
 name = "naia-client-socket-miniquad-example"
 path = "src/main.rs"
 
+[features]
+multithread = [ "naia-client-socket/multithread" ]
+
 [dependencies]
-miniquad = { version = "0.2", features = ["log-impl"] }
+log = "0.4.6"
+cfg-if = "0.1.10"
+wasm-logger = { version = "0.2.0" }
+# naia-client-socket = { path = "../../../client", features = ["use_miniquad"] }
+miniquad = { version = "0.2" }

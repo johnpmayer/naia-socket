@@ -1,5 +1,5 @@
 #!/bin/bash
-xdg-open http://localhost:3111/
+xdg-open http://localhost:3112/
 
 # replace 'client' & 'webserver' below with the appropriate directory names for your project
 working_dir='examples/client/miniquad'

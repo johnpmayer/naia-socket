@@ -2,10 +2,10 @@
 extern crate cfg_if;
 extern crate log;
 
-use app::App;
-
 mod app;
 mod loop_native;
+
+use app::App;
 
 fn main() {
     // Uncomment the line below to enable logging. You don't need it if something

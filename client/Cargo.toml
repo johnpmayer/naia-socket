@@ -18,7 +18,7 @@ maintenance = { status = "actively-developed" }
 [features]
 multithread = [ "naia-socket-shared/multithread" ]
 wasm_bindgen = [ "naia-socket-shared/wasm_bindgen", "url", "wasm-bindgen", "js-sys", "web_sys", "serde", "serde_derive" ]
-miniquad = [ ]
+use_miniquad = [ ]
 
 [dependencies]
 log = "0.4"

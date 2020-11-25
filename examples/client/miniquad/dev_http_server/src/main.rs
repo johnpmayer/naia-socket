@@ -19,7 +19,7 @@ async fn main() -> std::io::Result<()> {
                     .index_file("index.html"),
             )
     })
-    .bind("127.0.0.1:3111")?
+    .bind("127.0.0.1:3112")?
     .run()
     .await
 }
