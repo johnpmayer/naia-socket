@@ -23,7 +23,7 @@ module.exports = {
 
     new WasmPackPlugin({
       crateDirectory: __dirname,
-      extraArgs: "--out-name index --"
+      extraArgs: "--out-name index --"// --features multithread" // Add this to make the wasm client multithreaded
     }),
   ]
 };

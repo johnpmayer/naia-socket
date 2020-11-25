@@ -1,6 +1,7 @@
-use std::{cell::RefCell, collections::VecDeque, rc::Rc};
+use std::collections::VecDeque;
 
 use crate::Packet;
+use naia_socket_shared::Ref;
 use std::error::Error;
 use web_sys::RtcDataChannel;
 
@@ -8,7 +9,7 @@ use web_sys::RtcDataChannel;
 #[derive(Clone, Debug)]
 pub struct MessageSender {
     data_channel: RtcDataChannel,
-    dropped_outgoing_messages: Rc<RefCell<VecDeque<Packet>>>,
+    dropped_outgoing_messages: Ref<VecDeque<Packet>>,
 }
 
 impl MessageSender {
@@ -16,7 +17,7 @@ impl MessageSender {
     /// reference to a list of dropped messages
     pub fn new(
         data_channel: RtcDataChannel,
-        dropped_outgoing_messages: Rc<RefCell<VecDeque<Packet>>>,
+        dropped_outgoing_messages: Ref<VecDeque<Packet>>,
     ) -> MessageSender {
         MessageSender {
             data_channel,
@@ -28,7 +29,6 @@ impl MessageSender {
     pub fn send(&mut self, packet: Packet) -> Result<(), Box<dyn Error + Send>> {
         if let Err(_) = self.data_channel.send_with_u8_array(&packet.payload()) {
             self.dropped_outgoing_messages
-                .as_ref()
                 .borrow_mut()
                 .push_back(packet);
         }

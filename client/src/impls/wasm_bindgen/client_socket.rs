@@ -1,32 +1,32 @@
 extern crate log;
 use log::info;
 
-use std::{cell::RefCell, collections::VecDeque, net::SocketAddr, rc::Rc};
+use std::{collections::VecDeque, net::SocketAddr};
 
 use crate::{
     error::NaiaClientSocketError, link_conditioner::LinkConditioner, ClientSocketTrait,
     MessageSender, Packet,
 };
 
-use naia_socket_shared::LinkConditionerConfig;
+use naia_socket_shared::{LinkConditionerConfig, Ref};
 
 /// A client-side socket which communicates with an underlying unordered &
 /// unreliable protocol
 #[derive(Debug)]
 pub struct ClientSocket {
     address: SocketAddr,
-    message_queue: Rc<RefCell<VecDeque<Result<Option<Packet>, NaiaClientSocketError>>>>,
+    message_queue: Ref<VecDeque<Result<Option<Packet>, NaiaClientSocketError>>>,
     message_sender: MessageSender,
-    dropped_outgoing_messages: Rc<RefCell<VecDeque<Packet>>>,
+    dropped_outgoing_messages: Ref<VecDeque<Packet>>,
 }
 
 impl ClientSocket {
     /// Returns a new ClientSocket, connected to the given socket address
     pub fn connect(server_socket_address: SocketAddr) -> Box<dyn ClientSocketTrait> {
-        let message_queue = Rc::new(RefCell::new(VecDeque::new()));
+        let message_queue = Ref::new(VecDeque::new());
         let data_channel = webrtc_initialize(server_socket_address, message_queue.clone());
 
-        let dropped_outgoing_messages = Rc::new(RefCell::new(VecDeque::new()));
+        let dropped_outgoing_messages = Ref::new(VecDeque::new());
 
         let message_sender =
             MessageSender::new(data_channel.clone(), dropped_outgoing_messages.clone());
@@ -131,9 +131,10 @@ pub struct IceServerConfig {
     pub urls: [String; 1],
 }
 
+#[allow(unused_must_use)]
 fn webrtc_initialize(
     socket_address: SocketAddr,
-    msg_queue: Rc<RefCell<VecDeque<Result<Option<Packet>, NaiaClientSocketError>>>>,
+    msg_queue: Ref<VecDeque<Result<Option<Packet>, NaiaClientSocketError>>>,
 ) -> RtcDataChannel {
     let server_url_str = format!("http://{}/new_rtc_session", socket_address);
 
@@ -187,7 +188,7 @@ fn webrtc_initialize(
     onerror_callback.forget();
 
     let peer_clone = peer.clone();
-    let server_url_msg = Rc::new(server_url_str);
+    let server_url_msg = Ref::new(server_url_str);
     let peer_offer_func: Box<dyn FnMut(JsValue)> = Box::new(move |e: JsValue| {
         let session_description = e.dyn_into::<RtcSessionDescription>().unwrap();
         let peer_clone_2 = peer_clone.clone();
@@ -196,7 +197,7 @@ fn webrtc_initialize(
             let request = XmlHttpRequest::new().expect("can't create new XmlHttpRequest");
 
             request
-                .open("POST", &server_url_msg_clone)
+                .open("POST", &server_url_msg_clone.borrow())
                 .unwrap_or_else(|err| {
                     info!(
                         "WebSys, can't POST to server url. Original Error: {:?}",
