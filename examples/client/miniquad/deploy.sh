@@ -23,4 +23,4 @@ get_reload_actions(){
 }
 
 actions="$(get_reload_actions $working_dir $client $webserver_dir)"
-watchexec -r -s SIGKILL --ignore $webserver_dir/dist --ignore target --clear "$actions"
+watchexec -r -s SIGKILL --ignore $working_dir/$webserver_dir/dist --ignore target --clear "$actions"

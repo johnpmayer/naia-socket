@@ -21,24 +21,24 @@ pub struct JsObjectWeak(u32);
 impl Drop for JsObject {
     fn drop(&mut self) {
         unsafe {
-            js_free_object(self.weak());
+            naia_free_object(self.weak());
         }
     }
 }
 
 impl JsObject {
     pub fn string(string: &str) -> JsObject {
-        unsafe { js_create_string(string.as_ptr() as _, string.len() as _) }
+        unsafe { naia_create_string(string.as_ptr() as _, string.len() as _) }
     }
 
     pub fn to_string(&self, buf: &mut String) {
-        let len = unsafe { js_string_length(self.weak()) };
+        let len = unsafe { naia_string_length(self.weak()) };
 
         if len as usize > buf.len() {
             buf.reserve(len as usize - buf.len());
         }
         unsafe { buf.as_mut_vec().set_len(len as usize) };
-        unsafe { js_unwrap_to_str(self.weak(), buf.as_mut_vec().as_mut_ptr(), len as u32) };
+        unsafe { naia_unwrap_to_str(self.weak(), buf.as_mut_vec().as_mut_ptr(), len as u32) };
     }
 }
 
@@ -70,13 +70,13 @@ pub extern "C" fn error(error: JsObject) {
 
 #[no_mangle]
 extern "C" {
-    fn connect(server_socket_address: JsObject);
-    fn send(message: JsObject);
-    fn resend_dropped_messages();
-    fn js_create_string(buf: *const u8, max_len: u32) -> JsObject;
-    fn js_free_object(js_object: JsObjectWeak);
-    fn js_unwrap_to_str(js_object: JsObjectWeak, buf: *mut u8, max_len: u32);
-    fn js_string_length(js_object: JsObjectWeak) -> u32;
+    fn naia_connect(server_socket_address: JsObject);
+    fn naia_send(message: JsObject);
+    fn naia_resend_dropped_messages();
+    fn naia_create_string(buf: *const u8, max_len: u32) -> JsObject;
+    fn naia_free_object(js_object: JsObjectWeak);
+    fn naia_unwrap_to_str(js_object: JsObjectWeak, buf: *mut u8, max_len: u32);
+    fn naia_string_length(js_object: JsObjectWeak) -> u32;
 }
 
 struct Stage {
@@ -85,7 +85,7 @@ struct Stage {
 impl EventHandlerFree for Stage {
     fn update(&mut self) {
         unsafe {
-            resend_dropped_messages();
+            naia_resend_dropped_messages();
 
             if let Some(msg_queue) = &mut MESSAGE_QUEUE {
                 if let Some(message) = msg_queue.pop_front() {
@@ -94,7 +94,7 @@ impl EventHandlerFree for Stage {
                     if MESSAGE_COUNT < 10 {
                         let out_msg = "ping";
                         miniquad::debug!("send: {}", &out_msg);
-                        send(JsObject::string(out_msg));
+                        naia_send(JsObject::string(out_msg));
                         MESSAGE_COUNT += 1;
                     }
                 }
@@ -117,8 +117,8 @@ fn main() {
     unsafe {
         MESSAGE_QUEUE = Some(VecDeque::new());
         ERROR_QUEUE = Some(VecDeque::new());
-        connect(JsObject::string("192.168.86.38:14191"));
-        send(JsObject::string("ping"));
+        naia_connect(JsObject::string("192.168.86.38:14191"));
+        naia_send(JsObject::string("ping"));
     }
     miniquad::start(conf::Conf::default(), |ctx| UserData::free(Stage { ctx }));
 }
