@@ -40,6 +40,13 @@ impl ClientSocket {
     }
 }
 
+#[allow(unsafe_code)]
+#[cfg(feature = "multithread")]
+unsafe impl Send for ClientSocket {}
+#[allow(unsafe_code)]
+#[cfg(feature = "multithread")]
+unsafe impl Sync for ClientSocket {}
+
 impl ClientSocketTrait for ClientSocket {
     fn receive(&mut self) -> Result<Option<Packet>, NaiaClientSocketError> {
         if !self.dropped_outgoing_messages.borrow().is_empty() {
