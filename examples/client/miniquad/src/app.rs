@@ -42,8 +42,8 @@ impl App {
 
         let server_socket_address = SocketAddr::new(server_ip_address, SERVER_PORT);
 
-        let mut client_socket = ClientSocket::connect(server_socket_address);
-        //.with_link_conditioner(&LinkConditionerConfig::good_condition());
+        let mut client_socket = ClientSocket::connect(server_socket_address)
+            .with_link_conditioner(&LinkConditionerConfig::good_condition());
         let mut message_sender = client_socket.get_sender();
 
         message_sender

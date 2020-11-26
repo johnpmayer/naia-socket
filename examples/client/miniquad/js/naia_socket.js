@@ -14,6 +14,8 @@ const naia_socket = {
         importObject.env.naia_unwrap_to_str = function (js_object, buf, max_len) { naia_socket.js_unwrap_to_str(js_object, buf, max_len); };
         importObject.env.naia_string_length = function (js_object) { return naia_socket.js_string_length(js_object); };
         importObject.env.naia_free_object = function (js_object) { naia_socket.js_free_object(js_object); };
+        importObject.env.naia_random = function () { return Math.random(); };
+        importObject.env.naia_now = function () { return Date.now(); };
     },
 
     connect: function (server_socket_address) {
