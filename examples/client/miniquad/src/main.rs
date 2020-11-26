@@ -1,6 +1,5 @@
 #[macro_use]
 extern crate cfg_if;
-extern crate log;
 
 use std::collections::VecDeque;
 
@@ -47,8 +46,6 @@ impl EventHandlerFree for Stage {
 }
 
 fn main() {
-    wasm_logger::init(wasm_logger::Config::default());
-
     let mut app = App::new();
     miniquad::start(conf::Conf::default(), |ctx| {
         UserData::free(Stage { ctx, app })

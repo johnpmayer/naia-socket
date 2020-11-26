@@ -14,7 +14,7 @@
 extern crate cfg_if;
 
 cfg_if! {
-    if #[cfg(all(target_arch = "wasm32", feature = "wasm_bindgen"))] {
+    if #[cfg(all(target_arch = "wasm32", feature = "wbindgen"))] {
         #[macro_use]
         extern crate serde_derive;
     }

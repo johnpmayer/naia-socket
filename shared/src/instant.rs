@@ -1,7 +1,7 @@
 use std::time::Duration;
 
 cfg_if! {
-    if #[cfg(all(target_arch = "wasm32", feature = "wasm_bindgen"))] {
+    if #[cfg(all(target_arch = "wasm32", feature = "wbindgen"))] {
         // Wasm //
 
         use std::cmp::Ordering;
