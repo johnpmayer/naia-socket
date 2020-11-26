@@ -24,12 +24,6 @@ pub use find_my_ip_address::find_my_ip_address;
 mod link_conditioner_config;
 pub use link_conditioner_config::LinkConditionerConfig;
 
-mod timer;
-pub use timer::Timer;
-
-mod instant;
-pub use instant::Instant;
-
 mod time_queue;
 pub use time_queue::TimeQueue;
 
@@ -40,5 +34,5 @@ pub use reference::Ref;
 /// conditions
 pub mod link_condition_logic;
 
-/// Cross-platform random number generation utility functions
-pub mod random;
+mod impls;
+pub use impls::{Instant, Random, Timer};
