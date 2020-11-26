@@ -18,7 +18,7 @@ maintenance = { status = "actively-developed" }
 [features]
 multithread = [ "naia-socket-shared/multithread" ]
 wbindgen = [ "naia-socket-shared/wbindgen", "url", "wasm-bindgen", "js-sys", "web_sys", "serde", "serde_derive" ]
-mquad = [ "naia-socket-shared/mquad", ]
+mquad = [ "naia-socket-shared/mquad", "miniquad" ]
 
 [dependencies]
 log = { version = "0.4" }
@@ -34,3 +34,4 @@ web_sys = { version = "0.3.22", package = "web-sys", features = [
     "XmlHttpRequest", "XmlHttpRequestEventTarget", "MessageEvent", "ProgressEvent", "ErrorEvent", "Blob" ], optional = true  }
 serde = { version = "^1.0.59", optional = true  }
 serde_derive = { version = "^1.0.59", optional = true  }
+miniquad = { version = "0.2", features = ["log-impl"], optional = true }

@@ -16,28 +16,6 @@ struct Stage {
 impl EventHandlerFree for Stage {
     fn update(&mut self) {
         self.app.update();
-        //        unsafe {
-        //            naia_resend_dropped_messages();
-        //
-        //            if let Some(msg_queue) = &mut MESSAGE_QUEUE {
-        //                if let Some(message) = msg_queue.pop_front() {
-        //                    miniquad::debug!("recv: {}", &message);
-        //
-        //                    if MESSAGE_COUNT < 10 {
-        //                        let out_msg = "ping";
-        //                        miniquad::debug!("send: {}", &out_msg);
-        //                        naia_send(JsObject::string(out_msg));
-        //                        MESSAGE_COUNT += 1;
-        //                    }
-        //                }
-        //            }
-        //
-        //            if let Some(error_queue) = &mut ERROR_QUEUE {
-        //                if let Some(error) = error_queue.pop_front() {
-        //                    miniquad::debug!("error: {}", &error);
-        //                }
-        //            }
-        //        };
     }
 
     fn draw(&mut self) {

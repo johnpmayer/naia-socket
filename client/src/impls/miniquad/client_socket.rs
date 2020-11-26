@@ -1,9 +1,10 @@
-extern crate log;
-use log::info;
+use miniquad::info;
 
 use std::{collections::VecDeque, net::SocketAddr};
 
-use super::shared::{naia_connect, JsObject, ERROR_QUEUE, MESSAGE_QUEUE};
+use super::shared::{
+    naia_connect, naia_resend_dropped_messages, JsObject, ERROR_QUEUE, MESSAGE_QUEUE,
+};
 
 use crate::{
     error::NaiaClientSocketError, link_conditioner::LinkConditioner, ClientSocketTrait,
@@ -38,6 +39,22 @@ impl ClientSocket {
 
 impl ClientSocketTrait for ClientSocket {
     fn receive(&mut self) -> Result<Option<Packet>, NaiaClientSocketError> {
+        unsafe {
+            naia_resend_dropped_messages();
+
+            if let Some(msg_queue) = &mut MESSAGE_QUEUE {
+                if let Some(message) = msg_queue.pop_front() {
+                    return Ok(Some(Packet::new(message.into_bytes())));
+                }
+            }
+
+            if let Some(error_queue) = &mut ERROR_QUEUE {
+                if let Some(error) = error_queue.pop_front() {
+                    info!("error: {}", &error);
+                }
+            }
+        };
+
         Ok(None)
     }
 

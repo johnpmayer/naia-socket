@@ -13,8 +13,6 @@ path = "src/main.rs"
 multithread = [ "naia-client-socket/multithread" ]
 
 [dependencies]
-# log = "0.4.6"
 cfg-if = "0.1.10"
-# wasm-logger = { version = "0.2.0" }
 naia-client-socket = { path = "../../../client", features = [ "mquad" ] }
 miniquad = { version = "0.2", features = ["log-impl"] }
