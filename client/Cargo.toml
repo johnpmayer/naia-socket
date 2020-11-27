@@ -1,6 +1,6 @@
 [package]
 name = "naia-client-socket"
-version = "0.4.2"
+version = "0.5.0"
 authors = ["connorcarpenter <connorcarpenter@gmail.com>"]
 description = "Abstraction to expose common API over a UDP socket on Linux, and a unreliable WebRTC datachannel on the browser"
 documentation = "https://docs.rs/naia-client-socket"
@@ -22,7 +22,7 @@ mquad = [ "naia-socket-shared/mquad", "miniquad" ]
 
 [dependencies]
 log = { version = "0.4" }
-naia-socket-shared = { version = "0.3.1", path = "../shared" }
+naia-socket-shared = { version = "0.4.0", path = "../shared" }
 cfg-if = "0.1.10"
 url = { version = "2.1.1", optional = true }
 wasm-bindgen = { version = "0.2.45", features = [ "serde-serialize" ], optional = true  }
