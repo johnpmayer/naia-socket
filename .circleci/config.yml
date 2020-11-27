@@ -38,7 +38,7 @@ jobs:
           command: cargo build --target x86_64-unknown-linux-gnu --features "use-webrtc"
       - run:
           name: Build Client Example (Linux)
-          working_directory: ~/project/demo/client
+          working_directory: ~/project/demo/client/wasm_bindgen
           command: cargo build --target x86_64-unknown-linux-gnu
       - save_cache:
           paths:
