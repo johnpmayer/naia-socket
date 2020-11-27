@@ -10,7 +10,7 @@
 
 # naia-socket
 
-A cross-platform (currently WebAssembly & Linux) Socket API that wraps unreliable & unordered communication, using WebRTC & UDP.
+A cross-platform (including Wasm!) Socket API that wraps unreliable & unordered communication, using WebRTC & UDP.
 
 Utilizes Kyren's wonderful [webrtc-unreliable](https://github.com/kyren/webrtc-unreliable)
 
