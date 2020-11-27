@@ -14,7 +14,7 @@ A cross-platform (currently WebAssembly & Linux) Socket API that wraps unreliabl
 
 Utilizes Kyren's wonderful [webrtc-unreliable](https://github.com/kyren/webrtc-unreliable)
 
-`naia-client-socket` is usable with both `wasm-bindgen` and [miniquad](https://github.com/not-fl3/miniquad) (build for these with the feature "wbindgen" & "mquad", respectively)
+`naia-client-socket` is usable with both `wasm-bindgen` and [miniquad](https://github.com/not-fl3/miniquad) (build for these with the feature `wbindgen` & `mquad`, respectively)
 
 ## Demos
 
