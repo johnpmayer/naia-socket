@@ -18,20 +18,24 @@ extern crate log;
 #[macro_use]
 extern crate cfg_if;
 
-mod server_socket;
+pub use naia_socket_shared::LinkConditionerConfig;
+
+mod error;
+mod impls;
+mod link_conditioner;
+mod message_sender;
+mod packet;
+mod server_socket_trait;
+
+pub use error::NaiaServerSocketError;
+pub use impls::ServerSocket;
+pub use message_sender::MessageSender;
+pub use naia_socket_shared::find_my_ip_address;
+pub use packet::Packet;
+pub use server_socket_trait::ServerSocketTrait;
 
 cfg_if! {
-    if #[cfg(all(feature = "use-webrtc", not(feature = "use-udp")))]
-    {
-        // Use WebRTC
-        pub use server_socket::{ServerSocket, ServerSocketTrait};
-    }
-    else if #[cfg(all(feature = "use-udp", not(feature = "use-webrtc")))]
-    {
-        // Use UDP
-        pub use server_socket::{ServerSocket, ServerSocketTrait};
-    }
-    else if #[cfg(all(feature = "use-udp", feature = "use-webrtc"))]
+    if #[cfg(all(feature = "use-udp", feature = "use-webrtc"))]
     {
         // Use both protocols...
         compile_error!("Naia Server Socket can only use UDP or WebRTC, you must pick one");
@@ -42,15 +46,3 @@ cfg_if! {
         compile_error!("Naia Server Socket requires either the 'use-udp' or 'use-webrtc' feature to be enabled, you must pick one.");
     }
 }
-
-pub use naia_socket_shared::LinkConditionerConfig;
-
-mod error;
-mod link_conditioner;
-mod message_sender;
-mod packet;
-
-pub use error::NaiaServerSocketError;
-pub use message_sender::MessageSender;
-pub use naia_socket_shared::find_my_ip_address;
-pub use packet::Packet;

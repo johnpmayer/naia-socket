@@ -7,7 +7,7 @@ use naia_socket_shared::{link_condition_logic, LinkConditionerConfig, TimeQueue}
 
 use super::{
     error::NaiaServerSocketError, message_sender::MessageSender, packet::Packet,
-    server_socket::ServerSocketTrait,
+    server_socket_trait::ServerSocketTrait,
 };
 
 pub struct LinkConditioner {

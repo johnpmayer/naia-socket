@@ -1,6 +1,3 @@
-mod session;
-use session::start_session_server;
-
 use std::{
     io::Error as IoError,
     net::{IpAddr, SocketAddr, TcpListener},
@@ -16,6 +13,8 @@ use futures_channel::mpsc;
 use futures_util::{pin_mut, select, FutureExt, StreamExt};
 
 use naia_socket_shared::LinkConditionerConfig;
+
+use super::session::start_session_server;
 
 use crate::{
     error::NaiaServerSocketError, link_conditioner::LinkConditioner, message_sender::MessageSender,

@@ -19,16 +19,3 @@ pub trait ServerSocketTrait: Send + Sync {
         config: &LinkConditionerConfig,
     ) -> Box<dyn ServerSocketTrait>;
 }
-
-cfg_if! {
-    if #[cfg(feature = "use-webrtc")] {
-        // WebRTC Server ///
-        mod webrtc;
-        pub use webrtc::ServerSocket;
-    }
-    else if #[cfg(feature = "use-udp")] {
-        // UDP Server
-        mod udp;
-        pub use udp::ServerSocket;
-    }
-}
