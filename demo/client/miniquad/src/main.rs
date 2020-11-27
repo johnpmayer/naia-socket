@@ -1,8 +1,6 @@
 #[macro_use]
 extern crate cfg_if;
 
-use std::collections::VecDeque;
-
 use miniquad::*;
 
 mod app;
@@ -24,7 +22,7 @@ impl EventHandlerFree for Stage {
 }
 
 fn main() {
-    let mut app = App::new();
+    let app = App::new();
     miniquad::start(conf::Conf::default(), |ctx| {
         UserData::free(Stage { ctx, app })
     });
