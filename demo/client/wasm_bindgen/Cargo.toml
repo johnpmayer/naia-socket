@@ -16,9 +16,10 @@ path = "src/main.rs"
 
 [features]
 multithread = [ "naia-client-socket/multithread" ]
+wbindgen = [ "naia-client-socket/wbindgen" ]
 
 [dependencies]
-naia-client-socket = { path = "../../../client", features = [ "wbindgen" ] }
+naia-client-socket = { path = "../../../client" }
 log = "0.4.6"
 cfg-if = "0.1.10"
 

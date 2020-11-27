@@ -11,8 +11,9 @@ path = "src/main.rs"
 
 [features]
 multithread = [ "naia-client-socket/multithread" ]
+mquad = [ "naia-client-socket/mquad" ]
 
 [dependencies]
 cfg-if = "0.1.10"
-naia-client-socket = { path = "../../../client", features = [ "mquad" ] }
+naia-client-socket = { path = "../../../client" }
 miniquad = { version = "0.2", features = ["log-impl"] }

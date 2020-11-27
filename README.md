@@ -14,42 +14,44 @@ A cross-platform (currently WebAssembly & Linux) Socket API that wraps unreliabl
 
 Utilizes Kyren's wonderful [webrtc-unreliable](https://github.com/kyren/webrtc-unreliable)
 
-## Examples
+`naia-client-socket` is usable with both `wasm-bindgen` and [miniquad](https://github.com/not-fl3/miniquad) (build for these with the feature "wbindgen" & "mquad", respectively)
+
+## Demos
 
 ### Server:
 
 To run a UDP server on Linux: (that will be able to communicate with Linux clients)
 
-    1. cd examples/server
+    1. cd demo/server
     2. cargo run --features "use-udp"
 
 To run a WebRTC server on Linux: (that will be able to communicate with Web clients)
 
-    1. cd examples/server
+    1. cd demo/server
     2. cargo run --features "use-webrtc"
 
 ### Client:
 
 To run a UDP client on Linux: (that will be able to communicate with a UDP server)
 
-    1. cd examples/client
+    1. cd demo/client
     2. cargo run
 
 To run a WebRTC client on Web using wasm-bindgen: (that will be able to communicate with a WebRTC server)
 
-    1. Enter in your IP Address at the appropriate spot in examples/client/wasm-bindgen/src/app.rs
-    2. cd examples/client/wasm-bindgen
+    1. Enter in your IP Address at the appropriate spot in demo/client/wasm-bindgen/src/app.rs
+    2. cd demo/client/wasm-bindgen
     3. npm install              //should only need to do this once to install dependencies
     4. npm run start            //this will open a web browser, and hot reload
 
 To run a WebRTC client on Web using miniquad: (that will be able to communicate with a WebRTC server)
 
-    1. Enter in your IP Address at the appropriate spot in examples/client/miniquad/src/app.rs
-    2. cd examples/client/wasm-bindgen
-    3. npm install              //should only need to do this once to install dependencies
-    4. npm run start            //this will open a web browser, and hot reload
+    1. Enter in your IP Address at the appropriate spot in demo/client/miniquad/src/app.rs
+    2. cd demo/client/miniquad
+    3. cargo install watchexec   //should only need to do this once to install watchexec, which will auto-reload for you
+    4. ./deploy.sh               //this will open a web browser, and hot reload
 
-To simply build these examples instead of running them, substitute the above commands like so:
+To simply build these demos instead of running them, substitute the above commands like so:
 
     `cargo build` for `cargo run`, and
 
