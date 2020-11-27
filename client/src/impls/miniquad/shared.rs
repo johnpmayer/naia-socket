@@ -1,9 +1,8 @@
-use std::{collections::VecDeque, net::SocketAddr};
+use std::collections::VecDeque;
 
 pub static mut MESSAGE_QUEUE: Option<VecDeque<String>> = None;
 pub static mut ERROR_QUEUE: Option<VecDeque<String>> = None;
 
-#[no_mangle]
 extern "C" {
     pub fn naia_connect(server_socket_address: JsObject);
     pub fn naia_send(message: JsObject);
@@ -24,7 +23,7 @@ impl JsObject {
 }
 #[derive(Clone, Copy)]
 #[repr(transparent)]
-struct JsObjectWeak(u32);
+pub struct JsObjectWeak(u32);
 
 impl Drop for JsObject {
     fn drop(&mut self) {

@@ -10,8 +10,8 @@ cfg_if! {
         pub use self::miniquad::client_socket::ClientSocket;
     }
     else {
-        mod udp;
-        pub use udp::message_sender::MessageSender;
-        pub use udp::client_socket::ClientSocket;
+        mod native;
+        pub use native::message_sender::MessageSender;
+        pub use native::client_socket::ClientSocket;
     }
 }

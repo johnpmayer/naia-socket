@@ -1,5 +1,3 @@
-use miniquad::info;
-
 use std::{collections::VecDeque, net::SocketAddr};
 
 use super::shared::{
@@ -11,7 +9,7 @@ use crate::{
     MessageSender, Packet,
 };
 
-use naia_socket_shared::{LinkConditionerConfig, Ref};
+use naia_socket_shared::LinkConditionerConfig;
 
 /// A client-side socket which communicates with an underlying unordered &
 /// unreliable protocol
@@ -50,7 +48,7 @@ impl ClientSocketTrait for ClientSocket {
 
             if let Some(error_queue) = &mut ERROR_QUEUE {
                 if let Some(error) = error_queue.pop_front() {
-                    info!("error: {}", &error);
+                    return Err(NaiaClientSocketError::Message(error));
                 }
             }
         };

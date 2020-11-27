@@ -1,4 +1,3 @@
-#[no_mangle]
 extern "C" {
     pub fn naia_random() -> f64;
 }

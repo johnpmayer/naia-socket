@@ -1,6 +1,6 @@
 use std::error::Error;
 
-use super::shared::{naia_create_string, naia_send, JsObject, ERROR_QUEUE, MESSAGE_QUEUE};
+use super::shared::{naia_create_string, naia_send};
 use crate::Packet;
 
 /// Handles sending messages to the Server for a given Client Socket
