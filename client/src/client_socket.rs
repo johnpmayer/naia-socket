@@ -2,7 +2,8 @@ use std::fmt::Debug;
 
 use naia_socket_shared::LinkConditionerConfig;
 
-use super::{error::NaiaClientSocketError, message_sender::MessageSender, packet::Packet};
+use super::{error::NaiaClientSocketError, packet::Packet};
+use crate::MessageSender;
 
 cfg_if! {
     if #[cfg(feature = "multithread")] {
@@ -25,26 +26,4 @@ pub trait ClientSocketTrait: ClientSocketBaseTrait {
         self: Box<Self>,
         config: &LinkConditionerConfig,
     ) -> Box<dyn ClientSocketTrait>;
-}
-
-cfg_if! {
-    if #[cfg(target_arch = "wasm32")] {
-        // WebRTC Client //
-        pub use crate::webrtc_client_socket::WebrtcClientSocket;
-        /// ClientSocket is an alias for a socket abstraction using either UDP or WebRTC for communications
-        pub type ClientSocket = WebrtcClientSocket;
-
-        #[allow(unsafe_code)]
-        #[cfg(feature = "multithread")]
-        unsafe impl Send for WebrtcClientSocket {}
-        #[allow(unsafe_code)]
-        #[cfg(feature = "multithread")]
-        unsafe impl Sync for WebrtcClientSocket {}
-    }
-    else {
-        // UDP Client //
-        pub use crate::udp_client_socket::UdpClientSocket;
-        /// ClientSocket is an alias for a socket abstraction using either UDP or WebRTC for communications
-        pub type ClientSocket = UdpClientSocket;
-    }
 }

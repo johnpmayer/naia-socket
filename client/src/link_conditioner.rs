@@ -1,9 +1,8 @@
 use naia_socket_shared::{link_condition_logic, LinkConditionerConfig, TimeQueue};
 
-use super::{
-    client_socket::ClientSocketTrait, error::NaiaClientSocketError, message_sender::MessageSender,
-    packet::Packet,
-};
+use crate::MessageSender;
+
+use super::{client_socket::ClientSocketTrait, error::NaiaClientSocketError, packet::Packet};
 
 #[derive(Debug)]
 pub struct LinkConditioner {

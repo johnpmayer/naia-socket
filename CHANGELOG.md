@@ -1,7 +1,7 @@
 
 ## [0.4.0]
 - Added 'multithread' feature for running naia-client-socket in a multithreaded environment
-- Moved completely off of tokio & in the examples too (prefer smol & runtime-agnostic where necessary)
+- Moved completely off of tokio & in the demos too (prefer smol & runtime-agnostic where necessary)
 - Update to use webrtc-unreliable version 0.5.0
 
 --- sorry for skipped changelog here ---
