@@ -16,7 +16,7 @@ async fn main() -> std::io::Result<()> {
             .service(web::resource("/livereload/").route(web::get().to(ws_index)))
             .service(Files::new("/", "./dist/").index_file("index.html"))
     })
-    .bind("127.0.0.1:3112")?
+    .bind("127.0.0.1:3114")?
     .run()
     .await
 }

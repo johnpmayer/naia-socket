@@ -13,6 +13,9 @@ const naia_socket = {
         importObject.env.naia_create_string = function (buf, max_len) { return naia_socket.js_create_string(buf, max_len); };
         importObject.env.naia_unwrap_to_str = function (js_object, buf, max_len) { naia_socket.js_unwrap_to_str(js_object, buf, max_len); };
         importObject.env.naia_string_length = function (js_object) { return naia_socket.js_string_length(js_object); };
+        importObject.env.naia_create_u8_array = function (buf, max_len) { return naia_socket.js_create_u8_array(buf, max_len); };
+        importObject.env.naia_unwrap_to_u8_array = function (js_object, buf, max_len) { naia_socket.js_unwrap_to_u8_array(js_object, buf, max_len); };
+        importObject.env.naia_u8_array_length = function (js_object) { return naia_socket.js_u8_array_length(js_object); };
         importObject.env.naia_free_object = function (js_object) { naia_socket.js_free_object(js_object); };
         importObject.env.naia_random = function () { return Math.random(); };
         importObject.env.naia_now = function () { return Date.now(); };
@@ -39,8 +42,7 @@ const naia_socket = {
         this.channel.onopen = function() {
             _this.channel.onmessage = function(evt) {
                 let array = new Uint8Array(evt.data);
-                let in_msg = _this.decoder.decode(array);
-                wasm_exports.receive(naia_socket.js_object(in_msg));
+                wasm_exports.receive(naia_socket.js_object(array));
             };
         };
 
@@ -92,6 +94,21 @@ const naia_socket = {
         wasm_exports.error(this.js_object(JSON.stringify(err)));
     },
 
+    send: function (message) {
+        let message_string = naia_socket.get_js_object(message);
+        this.send_u8_array(message_string);
+    },
+
+    resend_dropped_messages: function () {
+        if (this.channel && this.dropped_outgoing_messages.length > 0) {
+            let temp_array = this.dropped_outgoing_messages;
+            this.dropped_outgoing_messages = [];
+            for (let i = 0; i < temp_array.length; i+=1) {
+                this.send_u8_array(Uint8Array.from(temp_array[i]));
+            }
+        }
+    },
+
     send_str: function (str) {
         if (this.channel) {
             try {
@@ -103,21 +120,6 @@ const naia_socket = {
         }
         else {
             this.dropped_outgoing_messages.push(str);
-        }
-    },
-
-    send: function (message) {
-        let message_string = naia_socket.get_js_object(message);
-        this.send_str(message_string);
-    },
-
-    resend_dropped_messages: function () {
-        if (this.channel && this.dropped_outgoing_messages.length > 0) {
-            let temp_array = this.dropped_outgoing_messages;
-            this.dropped_outgoing_messages = [];
-            for (let i = 0; i < temp_array.length; i+=1) {
-                this.send_str(temp_array[i]);
-            }
         }
     },
 
@@ -139,6 +141,39 @@ const naia_socket = {
     js_string_length: function (js_object) {
         let str = this.js_objects[js_object];
         return this.toUTF8Array(str).length;
+    },
+
+    send_u8_array: function (str) {
+        if (this.channel) {
+            try {
+                this.channel.send(str);
+            }
+            catch(err) {
+                this.dropped_outgoing_messages.push(Array.from(str));
+            }
+        }
+        else {
+            this.dropped_outgoing_messages.push(Array.from(str));
+        }
+    },
+
+    js_create_u8_array: function (buf, max_len) {
+        let u8Array = new Uint8Array(wasm_memory.buffer, buf, max_len);
+        return this.js_object(u8Array);
+    },
+
+    js_unwrap_to_u8_array: function (js_object, buf, max_len) {
+        let str = this.js_objects[js_object];
+        let length = str.length;
+        let dest = new Uint8Array(wasm_memory.buffer, buf, max_len);
+        for (let i = 0; i < length; i++) {
+            dest[i] = str[i];
+        }
+    },
+
+    js_u8_array_length: function (js_object) {
+        let str = this.js_objects[js_object];
+        return str.length;
     },
 
     js_free_object: function (js_object) {
