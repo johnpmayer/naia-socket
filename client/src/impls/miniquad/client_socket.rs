@@ -42,7 +42,7 @@ impl ClientSocketTrait for ClientSocket {
 
             if let Some(msg_queue) = &mut MESSAGE_QUEUE {
                 if let Some(message) = msg_queue.pop_front() {
-                    return Ok(Some(Packet::new(message.into_bytes())));
+                    return Ok(Some(Packet::new_raw(message)));
                 }
             }
 
