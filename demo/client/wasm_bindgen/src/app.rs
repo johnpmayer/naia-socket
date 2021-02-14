@@ -10,16 +10,7 @@ const PONG_MSG: &str = "pong";
 
 const SERVER_PORT: u16 = 14191;
 
-cfg_if! {
-    if #[cfg(target_arch = "wasm32")]
-    {
-        use std::net::IpAddr;
-    }
-    else
-    {
-        use naia_client_socket::find_my_ip_address;
-    }
-}
+use std::net::IpAddr;
 
 pub struct App {
     client_socket: Box<dyn ClientSocketTrait>,
@@ -35,13 +26,7 @@ impl App {
     pub fn new() -> App {
         info!("Naia Client Socket Example Started");
 
-        cfg_if! {
-            if #[cfg(target_arch = "wasm32")] {
-                let server_ip_address: IpAddr = "192.168.1.71".parse().expect("couldn't parse input IP address"); // Put your Server's IP Address here!, can't easily find this automatically from the browser
-            } else {
-                let server_ip_address = find_my_ip_address().expect("can't find ip address");
-            }
-        }
+        let server_ip_address: IpAddr = "127.0.0.1".parse().expect("couldn't parse input IP address"); // Put your Server's IP Address here!, can't easily find this automatically from the browser
 
         let server_socket_address = SocketAddr::new(server_ip_address, SERVER_PORT);
 

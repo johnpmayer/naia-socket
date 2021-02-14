@@ -22,34 +22,33 @@ Utilizes Kyren's wonderful [webrtc-unreliable](https://github.com/kyren/webrtc-u
 
 To run a UDP server on Linux: (that will be able to communicate with Linux clients)
 
-    1. cd demo/server
-    2. cargo run --features "use-udp"
+    1. `cd demo/server`
+    2. `cargo run --features "use-udp"`
 
 To run a WebRTC server on Linux: (that will be able to communicate with Web clients)
 
-    1. cd demo/server
-    2. cargo run --features "use-webrtc"
+    1. `cd demo/server`
+    2. `cargo run --features "use-webrtc"`
 
 ### Client:
 
 To run a UDP client on Linux: (that will be able to communicate with a UDP server)
 
-    1. cd demo/client
-    2. cargo run
+    1. `cd demo/client`
+    2. `cargo run`
 
 To run a WebRTC client on Web using wasm-bindgen: (that will be able to communicate with a WebRTC server)
 
     1. Enter in your IP Address at the appropriate spot in demo/client/wasm-bindgen/src/app.rs
-    2. cd demo/client/wasm-bindgen
-    3. npm install              //should only need to do this once to install dependencies
-    4. npm run start            //this will open a web browser, and hot reload
+    2. `cd demo/client/wasm-bindgen`
+    3. `npm install`              //should only need to do this once to install dependencies
+    4. `npm run start`            //this will open a web browser, and hot reload
 
 To run a WebRTC client on Web using miniquad: (that will be able to communicate with a WebRTC server)
 
     1. Enter in your IP Address at the appropriate spot in demo/client/miniquad/src/app.rs
-    2. cd demo/client/miniquad
-    3. cargo install watchexec   //should only need to do this once to install watchexec, which will auto-reload for you
-    4. ./deploy.sh               //this will open a web browser, and hot reload
+    2. `cargo install watchexec`   //should only need to do this once to install watchexec, which will auto-reload for you
+    3. `sh demo/client/miniquad/deploy.sh`               //this will open a web browser, and hot reload
 
 To simply build these demos instead of running them, substitute the above commands like so:
 
