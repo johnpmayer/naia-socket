@@ -1,6 +1,5 @@
-use std::net::SocketAddr;
-
 use miniquad::info;
+use std::net::SocketAddr;
 
 use naia_client_socket::{
     ClientSocket, ClientSocketTrait, LinkConditionerConfig, MessageSender, Packet,
