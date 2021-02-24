@@ -34,13 +34,13 @@ To run a WebRTC server on Linux: (that will be able to communicate with Web clie
 
 To run a UDP client on Linux: (that will be able to communicate with a UDP server)
 
-    1. `cd demo/client`
+    1. `cd demo/client/wasm_bindgen`
     2. `cargo run`
 
 To run a WebRTC client on Web using wasm-bindgen: (that will be able to communicate with a WebRTC server)
 
     1. Enter in your IP Address at the appropriate spot in demo/client/wasm-bindgen/src/app.rs
-    2. `cd demo/client/wasm-bindgen`
+    2. `cd demo/client/wasm_bindgen`
     3. `npm install`              //should only need to do this once to install dependencies
     4. `npm run start`            //this will open a web browser, and hot reload
 

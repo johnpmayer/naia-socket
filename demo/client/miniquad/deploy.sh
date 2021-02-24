@@ -1,5 +1,6 @@
 #!/bin/bash
-xdg-open http://localhost:3114/
+xdg-open http://localhost:3114/ # This will open a browser on Linux
+open http://localhost:3114/ # This will open a browser on macOS
 
 # replace 'client' & 'webserver' below with the appropriate directory names for your project
 client='naia-client-socket-miniquad-example'

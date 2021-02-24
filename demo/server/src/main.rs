@@ -3,10 +3,10 @@ extern crate log;
 
 use std::net::SocketAddr;
 
+use naia_server_socket::{LinkConditionerConfig, Packet, ServerSocket};
 use simple_logger;
 use smol::io;
 use std::net::IpAddr;
-use naia_server_socket::{LinkConditionerConfig, Packet, ServerSocket};
 
 const SERVER_PORT: u16 = 14191;
 const PING_MSG: &str = "ping";
@@ -18,7 +18,10 @@ fn main() -> io::Result<()> {
 
         info!("Naia Server Socket Example Started");
 
-        let server_ip_address: IpAddr = "127.0.0.1".parse().expect("couldn't parse input IP address"); // Put your Server's IP Address here!, can't easily find this automatically from the browser
+        // Put your Server's IP Address here!
+        let server_ip_address: IpAddr = "127.0.0.1"
+            .parse()
+            .expect("couldn't parse input IP address");
         let current_socket_address = SocketAddr::new(server_ip_address, SERVER_PORT);
 
         let mut server_socket = ServerSocket::listen(current_socket_address)
