@@ -8,11 +8,22 @@ use simple_logger;
 use smol::io;
 use std::net::IpAddr;
 
-const SERVER_PORT: u16 = 14191;
+const DEFAULT_SERVER_PORT: u16 = 14191;
 const PING_MSG: &str = "ping";
 const PONG_MSG: &str = "pong";
 
 fn main() -> io::Result<()> {
+    let port: u16 = {
+        let args: Vec<String> = std::env::args().collect();
+        if args.len() > 1 {
+            args[1]
+                .parse()
+                .expect("Argument must be a valid u16 integer")
+        } else {
+            DEFAULT_SERVER_PORT
+        }
+    };
+
     smol::block_on(async {
         simple_logger::init_with_level(log::Level::Info).expect("A logger was already initialized");
 
@@ -22,7 +33,7 @@ fn main() -> io::Result<()> {
         let server_ip_address: IpAddr = "127.0.0.1"
             .parse()
             .expect("couldn't parse input IP address");
-        let current_socket_address = SocketAddr::new(server_ip_address, SERVER_PORT);
+        let current_socket_address = SocketAddr::new(server_ip_address, port);
 
         let mut server_socket = ServerSocket::listen(current_socket_address)
             .await

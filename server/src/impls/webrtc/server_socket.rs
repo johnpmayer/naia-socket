@@ -1,7 +1,9 @@
 use std::{
     io::Error as IoError,
-    net::{IpAddr, SocketAddr, TcpListener},
+    net::{IpAddr, SocketAddr, UdpSocket},
 };
+
+use log::debug;
 
 use async_trait::async_trait;
 
@@ -39,6 +41,8 @@ impl ServerSocket {
         let webrtc_listen_port =
             get_available_port(webrtc_listen_ip.to_string().as_str()).expect("no available port");
         let webrtc_listen_addr = SocketAddr::new(webrtc_listen_ip, webrtc_listen_port);
+
+        debug!("Using port {} for webrtc listener", webrtc_listen_addr);
 
         let (to_client_sender, to_client_receiver) = mpsc::channel(CLIENT_CHANNEL_SIZE);
 
@@ -136,8 +140,13 @@ fn get_available_port(ip: &str) -> Option<u16> {
 }
 
 fn port_is_available(ip: &str, port: u16) -> bool {
-    match TcpListener::bind((ip, port)) {
-        Ok(_) => true,
+    debug!("Trying to bind to {} {}", ip, port);
+    
+    match UdpSocket::bind((ip, port)) {
+        Ok(_) => {
+            debug!("Was able to bind to {} {}", ip, port);
+            true
+        }
         Err(_) => false,
     }
 }
